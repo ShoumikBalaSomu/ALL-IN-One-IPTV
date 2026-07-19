@@ -1,43 +1,92 @@
-# ALL-IN-One-IPTV Ecosystem
+# ALL-IN-One-IPTV: Optimizer & Player Ecosystem 🚀
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Update Playlists](https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/actions/workflows/update.yml/badge.svg)
+![Build Status](https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/actions/workflows/update.yml/badge.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20Android-lightgrey)
 
-Welcome to the **ALL-IN-One-IPTV** repository! This project aims to build a complete, production-ready open-source IPTV ecosystem.
+Welcome to the **ALL-IN-One-IPTV** ecosystem—an advanced, automated pipeline for aggregating, optimizing, and flawlessly streaming free, publicly available IPTV channels. 
 
-## Phase 1: Automated Playlist Aggregator
+This project aims to solve the biggest pain points in IPTV streaming: dead links, endless buffering, and terrible UI/UX. By combining a highly concurrent automated backend, a dynamic local proxy engine, and a premium "Two-Faced" cross-platform player, we've created the ultimate zero-buffer entertainment experience.
 
-This repository currently hosts the Automated Playlist Aggregator. It is a highly concurrent Python script designed to run on GitHub Actions. It fetches various IPTV playlists from multiple sources, deduplicates them, groups channels by country, checks stream health, and outputs optimized `.m3u` playlists.
+---
 
-### Outputs
-- `output/Combined_by_Country.m3u`: All unique streams from the sources grouped by country.
-- `output/Checked_Combined_by_Country.m3u`: Only the streams that passed a real-time health check.
+## 🌟 Ecosystem Features
 
-### How it works
-1. **Auto-Collect & Combine:** Fetches all defined M3U URLs.
-2. **Deduplication:** Removes duplicate stream URLs.
-3. **Health Checking:** Concurrently checks stream vitality to filter out dead links.
-4. **Automation:** A GitHub Action runs daily to update the generated playlists.
+### 1. Automated Playlist Aggregator (The Backend)
+Powered by GitHub Actions, our Python backend runs asynchronously every 6 hours to fetch over 70+ public M3U sources. It automatically:
+*   **Deduplicates & Folds:** Groups identical channels from different sources into a single logical channel with multiple fallback URLs.
+*   **Health Checks:** Aggressively pings the underlying hosts in real-time, instantly discarding dead streams and preventing IP bans via intelligent rate-limiting.
+*   **Generates Optimized Output:** Outputs a pristine, highly available `checked_combined_by_country.m3u` containing only live streams.
 
-### Usage
-You can drop any `.m3u` or `.m3u8` files into the `input/` folder and push to the repository. The GitHub action will automatically pick them up, process them along with the main sources, and update the `output/` folder.
+### 2. Ultimate Cross-Platform Player (Phase 2)
+Built with **Flutter** and powered by **media_kit** (libVLC/FFmpeg), ensuring flawless hardware-accelerated video decoding across Windows, Linux, and Android.
+*   **"Two-Faced" UI:** Automatically shifts between a cinematic "Netflix-style" UI for VOD (Movies & Series) and a lightning-fast "OTT Navigator-style" UI for Live TV.
+*   **Smart Fallback Engine:** If a stream dies mid-broadcast, the player instantly and transparently switches to the next folded fallback URL—without closing your video.
 
-## Acknowledgments
-We would like to thank all the playlist maintainers whose public playlists are aggregated here:
-- sm-monirulislam
-- abusaeeidx
-- xfireflix
-- Mrbotrx
-- tahsinulmohsin
-- ashik4u
-- opensourceflix
-- alberttartas
-- iptv-org
-- and many others!
+### 3. Playlist Optimizer Local Proxy (Phase 3)
+A native Android background service (Ktor Server) that intercepts your streams before they hit your player.
+*   **Zero-Buffer Routing:** Concurrently pings all available fallback URLs for a channel when you press "Play" and instantly redirects (HTTP 302) to the fastest active server.
+*   **OpenVPN Split Tunneling:** Route geographically locked streams through a VPN while keeping local, high-speed streams (like BDIX) on your direct network.
 
-## Future Phases
-- **Phase 2:** Cross-Platform IPTV & VOD Player
-- **Phase 3:** Playlist Optimizer Local Proxy App
+---
 
-## Disclaimer
-Please read our [LEGAL.md](LEGAL.md) before using this repository.
+## 🛠️ Quick Start & Local Testing
+
+Want to contribute or test the ecosystem locally before pushing? Here's how to spin it up.
+
+### Prerequisites
+*   Python 3.11+
+*   Flutter SDK (3.22+)
+*   Android Studio (for building the Proxy App)
+
+### 1. Run the Backend Aggregator (Python)
+```bash
+git clone https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV.git
+cd ALL-IN-One-IPTV
+pip install aiohttp
+python scraper.py
+python folder.py
+python checker.py
+# The optimized playlist will be available in output/checked_combined_by_country.m3u
+```
+
+### 2. Run the Cross-Platform Player (Flutter)
+```bash
+cd player/
+flutter pub get
+dart run build_runner build  # Generate local Isar database bindings
+flutter run -d linux         # Change 'linux' to 'windows' or your connected Android device
+```
+
+### 3. Run the Local Proxy (Android)
+Open the `/proxy_app` directory in Android Studio. Sync the Gradle files, select your emulator or physical device, and press Run.
+
+---
+
+## 🛡️ Security & UX Best Practices
+*   **Absolute Privacy:** This ecosystem contains **zero tracking, telemetry, or analytics**. What you watch stays entirely on your local device.
+*   **Intelligent Caching:** EPG data and playlists are cached locally via high-speed databases (Isar/Room) to minimize network load and API rate limits.
+*   **Graceful Degradation:** Our UI is built to handle network timeouts elegantly. If an API fails, the app seamlessly defaults to cached data without crashing.
+
+---
+
+## 🔮 Future Roadmap (Phase 4 & Beyond)
+*   [ ] **Torrent & P2P Integration:** Integration of WebTorrent and Acestream protocols directly into the player to enable decentralized, peer-to-peer streaming. This ensures zero-buffering even on highly congested live sports streams.
+*   [ ] **AI Metadata Fetcher:** Utilizing local, small-language models to clean up messy channel names and automatically assign TMDB metadata.
+*   [ ] **Automated Docker Deployment:** A one-click Docker image to host the entire aggregator and proxy stack on a home NAS (e.g., Unraid/TrueNAS).
+
+---
+
+## 🙏 Special Thanks & Acknowledgments
+This project stands on the shoulders of the incredible open-source IPTV community. We extend our deepest gratitude to the maintainers of the public playlists and data sources utilized in our aggregator:
+*   [iptv-org](https://github.com/iptv-org/iptv)
+*   [SM-Live-TV (sm-monirulislam)](https://github.com/sm-monirulislam)
+*   [abusaeeidx](https://github.com/abusaeeidx)
+*   [Free-TV](https://github.com/Free-TV/IPTV)
+*   [BuddyChewChew](https://github.com/BuddyChewChew)
+*   [Love4vn](https://github.com/Love4vn)
+*   *...and all other contributors dedicating their time to keep public streams alive!*
+
+---
+*Created with ❤️ by ShoumikBalaSomu and the Open Source Community.*
