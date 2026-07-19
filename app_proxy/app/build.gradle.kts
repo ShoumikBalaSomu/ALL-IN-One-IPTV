@@ -60,6 +60,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+    implementation("org.jmdns:jmdns:3.5.8")
 
     // Room Database
     implementation("androidx.room:room-runtime:$room_version")
