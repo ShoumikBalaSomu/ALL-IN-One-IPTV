@@ -5,6 +5,8 @@ import os
 import glob
 import json
 import logging
+from collections import defaultdict
+from urllib.parse import urlparse
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -129,6 +131,32 @@ def parse_m3u(content):
                 current_vlc = []
     return channels
 
+def fold_and_write(channels, output_path):
+    grouped = defaultdict(lambda: defaultdict(list))
+    for c in channels:
+        grouped[c["group"]][c["name"]].append(c)
+        
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write("#EXTM3U\n")
+        for group in sorted(grouped.keys()):
+            for name in sorted(grouped[group].keys()):
+                streams = grouped[group][name]
+                primary = streams[0]
+                f.write(primary["extinf"] + "\n")
+                for stream in streams:
+                    for opt in stream["vlc_opts"]:
+                        f.write(opt + "\n")
+                    f.write(stream["url"] + "\n")
+
+async def check_host(session, host_url, timeout=5):
+    try:
+        async with session.get(host_url, timeout=timeout) as response:
+            return 200 <= response.status < 400
+    except Exception:
+        return False
+
 async def fetch_playlist(session, url):
     try:
         async with session.get(url, timeout=15) as response:
@@ -142,8 +170,10 @@ async def fetch_playlist(session, url):
 async def main():
     os.makedirs("temp", exist_ok=True)
     os.makedirs("input", exist_ok=True)
+    os.makedirs("output", exist_ok=True)
     
     async with aiohttp.ClientSession() as session:
+        logging.info("Step 1: Fetching M3U Playlists...")
         tasks = [fetch_playlist(session, url) for url in DATA_SOURCES]
         results = await asyncio.gather(*tasks)
         
@@ -168,8 +198,43 @@ async def main():
         unique_channels = list(unique_channels_dict.values())
         logging.info(f"Total unique URLs found: {len(unique_channels)}")
         
-        with open("temp/scraped.json", "w", encoding="utf-8") as f:
-            json.dump(unique_channels, f)
+        # Write File 1: The Raw Combined List
+        fold_and_write(unique_channels, "output/combined_by_country.m3u")
+        logging.info("Generated output/combined_by_country.m3u")
+
+        # Step 2: Health Checking
+        logging.info("Step 2: Checking Host Health...")
+        host_map = defaultdict(list)
+        for c in unique_channels:
+            parsed = urlparse(c["url"])
+            host = f"{parsed.scheme}://{parsed.netloc}"
+            host_map[host].append(c)
+            
+        alive_hosts = set()
+        semaphore = asyncio.Semaphore(50)
+        
+        async def sem_check(host):
+            async with semaphore:
+                test_url = host_map[host][0]["url"]
+                async with aiohttp.ClientSession() as inner_session:
+                    if await check_host(inner_session, test_url):
+                        alive_hosts.add(host)
+                        
+        check_tasks = [sem_check(host) for host in host_map.keys()]
+        await asyncio.gather(*check_tasks)
+        
+        logging.info(f"Alive hosts: {len(alive_hosts)} out of {len(host_map)}")
+        
+        alive_channels = []
+        for c in unique_channels:
+            parsed = urlparse(c["url"])
+            host = f"{parsed.scheme}://{parsed.netloc}"
+            if host in alive_hosts:
+                alive_channels.append(c)
+                
+        # Write File 2: The Checked Combined List
+        fold_and_write(alive_channels, "output/checked_combined_by_country.m3u")
+        logging.info("Generated output/checked_combined_by_country.m3u")
 
 if __name__ == "__main__":
     import sys

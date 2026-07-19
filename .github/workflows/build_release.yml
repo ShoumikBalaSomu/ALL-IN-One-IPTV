@@ -1,0 +1,62 @@
+name: Release Builds
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build_android:
+    name: Build Apps & Publish
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 1. Build Android Player (Flutter)
+      - name: Setup Java (Player)
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Build Player APK
+        working-directory: ./app_player
+        run: |
+          flutter pub get
+          flutter build apk --release
+
+      # 2. Build Android Proxy (Kotlin)
+      - name: Setup Java (Proxy)
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          
+      - name: Build Proxy APK
+        working-directory: ./app_proxy
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      # 3. Create GitHub Release
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            app_player/build/app/outputs/flutter-apk/app-release.apk
+            app_proxy/app/build/outputs/apk/release/app-release.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
