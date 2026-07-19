@@ -33,6 +33,7 @@ jobs:
       - name: Build Player APK
         working-directory: ./app_player
         run: |
+          flutter create --platforms=android .
           flutter pub get
           flutter build apk --release
           
@@ -81,6 +82,7 @@ jobs:
       - name: Build Windows Player
         working-directory: ./app_player
         run: |
+          flutter create --platforms=windows .
           flutter pub get
           flutter build windows --release
           

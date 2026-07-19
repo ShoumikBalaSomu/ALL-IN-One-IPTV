@@ -12,9 +12,9 @@ dependencies:
   # UI & State
   flutter_riverpod: ^2.4.9
   # Video Player (libVLC/FFmpeg backed)
-  media_kit: ^1.1.9
-  media_kit_video: ^1.1.9
-  media_kit_libs_video: ^1.1.9
+  media_kit: ^1.1.0
+  media_kit_video: ^1.1.0
+  media_kit_libs_video: ^1.0.7
   # Network & Parsers
   dio: ^5.4.0
   xml: ^6.3.0
