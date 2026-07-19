@@ -35,6 +35,7 @@ jobs:
         run: |
           flutter create --platforms=android .
           flutter pub get
+          sed -i 's/android {/android {\n    namespace "dev.isar.isar_flutter_libs"/g' $HOME/.pub-cache/hosted/pub.dev/isar_flutter_libs-3.1.0+1/android/build.gradle || true
           flutter build apk --release
           
       - name: Upload Player APK Artifact
