@@ -30,9 +30,7 @@ jobs:
           pip install aiohttp
 
       - name: Run Scraper
-        run: |
-          cd backend
-          python scraper.py
+        run: python backend/scraper.py
 
       - name: Commit and Push changes
         run: |
