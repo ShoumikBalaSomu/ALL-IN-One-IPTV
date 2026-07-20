@@ -1,0 +1,17 @@
+# Transcoding Node Base Image (NVIDIA GPU Supported)
+FROM jrottenberg/ffmpeg:4.4-nvidia
+
+# Install Python & FastAPI for Orchestration Layer
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    pip3 install fastapi uvicorn
+
+WORKDIR /app
+
+# Copy the orchestration script
+COPY transcoder_api.py .
+
+EXPOSE 8000
+
+# Start the API
+CMD ["uvicorn", "transcoder_api:app", "--host", "0.0.0.0", "--port", "8000"]

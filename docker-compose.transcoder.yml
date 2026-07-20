@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  transcoding-node:
+    build: 
+      context: .
+      dockerfile: Dockerfile.transcoder
+    container_name: iptv_transcoder_farm
+    restart: always
+    ports:
+      - "8000:8000"
+    
+    # Enable NVIDIA GPU Passthrough for NVENC Acceleration
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, video]

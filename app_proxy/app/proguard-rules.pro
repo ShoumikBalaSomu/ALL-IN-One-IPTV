@@ -1,0 +1,9 @@
+-dontwarn io.netty.**
+-dontwarn org.apache.log4j.**
+-dontwarn org.apache.logging.log4j.**
+-dontwarn org.eclipse.jetty.npn.**
+-dontwarn org.slf4j.**
+-dontwarn reactor.blockhound.integration.**
+-dontwarn java.lang.management.**
+-dontwarn io.ktor.**
+-dontwarn org.jmdns.**
