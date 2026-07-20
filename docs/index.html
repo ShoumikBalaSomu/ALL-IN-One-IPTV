@@ -3,65 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS - Web Player</title>
+    <title>ALL-IN-ONE IPTV - Nexus Web</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- HLS.js for playing .m3u8 streams in browser -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- HLS.js for playing .m3u8 streams -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
-    <!-- Background Canvas -->
+    <!-- Global Particle Background -->
     <canvas id="particleCanvas"></canvas>
-    
-    <div class="app-container">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="logo">
-                <i class="fas fa-play-circle" style="color: #00FF7F;"></i>
-                <span>NEXUS</span>
+
+    <!-- VIEW 1: SPLASH / HUB (Matches Flutter Sources Screen) -->
+    <div id="view-splash" class="view active">
+        <div class="splash-content">
+            <div class="splash-header">
+                <h4>NEXUS</h4>
+                <h1 class="gradient-text">WEB ECOSYSTEM</h1>
+                <p>Select a module to initialize your ultra-premium experience.</p>
             </div>
             
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search channels...">
-            </div>
-
-            <div class="category-header">COUNTRIES / GROUPS</div>
-            <ul class="category-list" id="categoryList">
-                <li class="active" data-group="All">All Channels</li>
-                <!-- Categories injected here -->
-            </ul>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Video Player Area -->
-            <div class="video-container">
-                <video id="videoPlayer" controls autoplay></video>
-                <div class="video-overlay" id="videoOverlay">
-                    <i class="fas fa-tv fa-4x" style="color: rgba(255,255,255,0.2);"></i>
-                    <h2>Select a channel to begin streaming</h2>
+            <div class="module-cards">
+                <div class="module-card" onclick="switchView('view-livetv')">
+                    <div class="mc-icon" style="background: rgba(229, 9, 20, 0.2); color: #E50914; border-color: rgba(229, 9, 20, 0.5);">
+                        <i class="fas fa-tv"></i>
+                    </div>
+                    <div class="mc-text">
+                        <h3>Live TV Explorer</h3>
+                        <p>3-pane OTT layout with real-time streaming.</p>
+                    </div>
+                    <i class="fas fa-chevron-right mc-arrow"></i>
                 </div>
-                <div class="now-playing" id="nowPlayingInfo">
-                    <img src="" alt="" id="npLogo" style="display:none;">
-                    <div class="np-text">
-                        <span class="np-badge">LIVE</span>
-                        <h3 id="npTitle">No Channel Selected</h3>
+
+                <div class="module-card" onclick="switchView('view-vod')">
+                    <div class="mc-icon" style="background: rgba(0, 198, 255, 0.2); color: #00C6FF; border-color: rgba(0, 198, 255, 0.5);">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <div class="mc-text">
+                        <h3>Cinema VOD</h3>
+                        <p>Netflix-style cinematic movie experience.</p>
+                    </div>
+                    <i class="fas fa-chevron-right mc-arrow"></i>
+                </div>
+
+                <div class="module-card" onclick="switchView('view-proxy')">
+                    <div class="mc-icon" style="background: rgba(0, 255, 127, 0.2); color: #00FF7F; border-color: rgba(0, 255, 127, 0.5);">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="mc-text">
+                        <h3>Proxy Optimizer</h3>
+                        <p>Cyber-dashboard for routing and health stats.</p>
+                    </div>
+                    <i class="fas fa-chevron-right mc-arrow"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 2: LIVE TV (Matches Flutter 3-pane layout) -->
+    <div id="view-livetv" class="view">
+        <div class="livetv-container">
+            <!-- Sidebar -->
+            <aside class="tv-sidebar" id="tvSidebar">
+                <div class="nav-btn" onclick="switchView('view-splash')"><i class="fas fa-home"></i></div>
+                <div class="sidebar-categories" id="tvCategories">
+                    <!-- Injected via JS -->
+                </div>
+            </aside>
+            
+            <!-- Main Content Area -->
+            <div class="tv-main">
+                <!-- Topbar -->
+                <header class="tv-topbar">
+                    <h2 id="tvCurrentGroup">ALL CHANNELS</h2>
+                    <div class="tv-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="tvSearchInput" placeholder="Search channels...">
+                    </div>
+                    <button class="cinema-btn" onclick="switchView('view-vod')"><i class="fas fa-film"></i> CINEMA MODE</button>
+                </header>
+
+                <!-- Split Pane -->
+                <div class="tv-split">
+                    <!-- Channel List -->
+                    <div class="tv-channel-list" id="tvChannelList">
+                        <!-- Injected via JS -->
+                        <div class="loading-state">Loading global M3U archive...</div>
+                    </div>
+                    
+                    <!-- Player & EPG -->
+                    <div class="tv-player-pane">
+                        <div class="tv-video-container">
+                            <video id="tvVideo" controls autoplay></video>
+                            <div class="tv-video-overlay" id="tvOverlay">
+                                <i class="fas fa-play-circle fa-4x"></i>
+                            </div>
+                            <div class="tv-live-badge"><i class="fas fa-circle"></i> LIVE</div>
+                        </div>
+                        <div class="tv-epg-section">
+                            <h2 id="epgTitle">No Channel Selected</h2>
+                            <h4 id="epgGroup">Select a channel from the list to begin playback</h4>
+                            <p class="epg-desc">Our intelligent routing will automatically parse the M3U8 stream and attempt playback natively in your browser using HLS.js.</p>
+                            
+                            <div class="epg-timeline">
+                                <h3>EPG SCHEDULE (Simulated)</h3>
+                                <div class="epg-item active">
+                                    <div class="epg-time">NOW</div>
+                                    <div class="epg-info">
+                                        <strong>Current Broadcast</strong>
+                                        <span>Live Streaming</span>
+                                    </div>
+                                </div>
+                                <div class="epg-item">
+                                    <div class="epg-time">NEXT</div>
+                                    <div class="epg-info">
+                                        <strong>Upcoming Program</strong>
+                                        <span>Scheduled content</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 3: VOD CINEMA (Matches Flutter Netflix UI) -->
+    <div id="view-vod" class="view">
+        <!-- Dynamic Blurring App Bar -->
+        <header class="vod-appbar" id="vodAppbar">
+            <h2>CINEMA</h2>
+            <div class="vod-actions">
+                <div class="nav-btn-icon" onclick="switchView('view-splash')"><i class="fas fa-home"></i></div>
+                <div class="nav-btn-icon"><i class="fas fa-search"></i></div>
+                <img src="https://i.pravatar.cc/150?img=11" class="avatar">
+            </div>
+        </header>
+
+        <div class="vod-scroll" id="vodScroll">
+            <!-- Hero Banner -->
+            <div class="vod-hero">
+                <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2000&auto=format&fit=crop" class="hero-bg" id="heroBg">
+                <div class="hero-gradient"></div>
+                <div class="hero-content">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Interstellar_logo.svg/1200px-Interstellar_logo.svg.png" class="hero-title-img">
+                    <div class="hero-tags">
+                        <span>Sci-Fi</span> • <span>2014</span> • <span class="tag-4k">4K HDR</span>
+                    </div>
+                    <div class="hero-buttons">
+                        <button class="btn-play"><i class="fas fa-play"></i> Play</button>
+                        <button class="btn-list"><i class="fas fa-plus"></i> My List</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Channel Grid -->
-            <div class="channels-section">
-                <div class="section-header">
-                    <h2 id="currentGroupName">All Channels</h2>
-                    <span class="channel-count" id="channelCount">Loading...</span>
+            <!-- Categories -->
+            <div class="vod-categories">
+                <div class="vod-row">
+                    <h3>Trending Now</h3>
+                    <div class="carousel" id="carouselTrending"></div>
                 </div>
-                <div class="channel-grid" id="channelGrid">
-                    <!-- Channels injected here -->
+                <div class="vod-row">
+                    <h3>Top 10 in Your Country</h3>
+                    <div class="carousel top-10" id="carouselTop10"></div>
+                </div>
+                <div class="vod-row">
+                    <h3>Action & Adventure</h3>
+                    <div class="carousel" id="carouselAction"></div>
                 </div>
             </div>
-        </main>
+        </div>
+    </div>
+
+    <!-- VIEW 4: PROXY DASHBOARD (Matches Android Compose UI) -->
+    <div id="view-proxy" class="view">
+        <div class="proxy-container">
+            <div class="proxy-nav">
+                <div class="nav-btn-icon" onclick="switchView('view-splash')"><i class="fas fa-arrow-left"></i></div>
+                <div>
+                    <h2>NEXUS CORE</h2>
+                    <p>v2.0.4 // REAL-TIME OPTIMIZER</p>
+                </div>
+                <div class="nav-btn-icon"><i class="fas fa-network-wired"></i></div>
+            </div>
+
+            <!-- Animated Canvas Reactor -->
+            <div class="reactor-wrapper">
+                <canvas id="reactorCanvas"></canvas>
+                <div class="reactor-center">
+                    <i class="fas fa-shield-alt" id="proxyStatusIcon"></i>
+                    <h3 id="proxyStatusText">STANDBY</h3>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="proxy-stats">
+                <div class="stat-card" style="border-left: 4px solid #00C6FF;">
+                    <span><i class="fas fa-code-branch"></i> FOLDED LINKS</span>
+                    <h2 id="statFolded">14,502</h2>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid #FF0055;">
+                    <span><i class="fas fa-ban"></i> DEAD BLOCKED</span>
+                    <h2 id="statBlocked">329</h2>
+                </div>
+            </div>
+
+            <!-- Bandwidth Meter -->
+            <div class="bandwidth-meter">
+                <div class="bw-header">
+                    <span><i class="fas fa-tachometer-alt"></i> TRAFFIC THROUGHPUT</span>
+                    <span id="bwText" style="color: #00FF7F; font-family: monospace; font-size: 16px;">0.0 MB/s</span>
+                </div>
+                <div class="bw-bar-bg">
+                    <div class="bw-bar-fill" id="bwFill"></div>
+                </div>
+            </div>
+
+            <button class="engage-btn" id="btnEngageProxy">INITIALIZE OPTIMIZER</button>
+        </div>
     </div>
 
     <script src="app.js"></script>
