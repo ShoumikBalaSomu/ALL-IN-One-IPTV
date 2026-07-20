@@ -1,0 +1,100 @@
+name: Build and Release Android Apps
+
+on:
+  push:
+    tags:
+      - 'v*' # Only run when a new version tag is pushed (e.g. v1.0.0)
+  workflow_dispatch: # Allows manual trigger from GitHub UI without wasting minutes on every commit
+
+jobs:
+  build-flutter:
+    name: Build Flutter Unified Player (APK)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+          
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          
+      - name: Build Flutter APK
+        working-directory: ./app_player
+        run: |
+          flutter pub get
+          flutter build apk --release --split-per-abi
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app_player_apk
+          path: app_player/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+
+  build-compose:
+    name: Build Proxy Optimizer (APK)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+          
+      - name: Make gradlew executable
+        working-directory: ./app_proxy
+        run: chmod +x gradlew
+        
+      - name: Build Compose APK
+        working-directory: ./app_proxy
+        run: ./gradlew assembleRelease
+        
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app_proxy_apk
+          path: app_proxy/app/build/outputs/apk/release/app-release-unsigned.apk
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build-flutter, build-compose]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: apks
+          
+      - name: Rename APKs for Release
+        run: |
+          mv apks/app_player_apk/*.apk ./NEXUS_Player_v${{ github.ref_name || 'latest' }}.apk
+          mv apks/app_proxy_apk/*.apk ./NEXUS_Proxy_v${{ github.ref_name || 'latest' }}.apk
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: NEXUS Ecosystem Release ${{ github.ref_name || 'Latest' }}
+          tag_name: ${{ github.ref_name || 'v1.0.0' }}
+          files: |
+            ./NEXUS_Player_*.apk
+            ./NEXUS_Proxy_*.apk
+          body: |
+            ## 🚀 Automated APK Build
+            Download and install the latest Android applications for the ALL-IN-One-IPTV ecosystem directly to your device!
+            
+            * **NEXUS_Player.apk**: The Flutter Unified Media Player (VOD & Live TV)
+            * **NEXUS_Proxy.apk**: The Jetpack Compose Background Optimizer
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
