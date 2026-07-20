@@ -65,9 +65,41 @@ jobs:
           name: app_proxy_apk
           path: apps/app_proxy/app/build/outputs/apk/release/app-release-unsigned.apk
 
+  build-windows:
+    name: Build Windows Player (EXE)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
+        
+      - name: Build Windows Player
+        working-directory: ./apps/app_player
+        run: |
+          flutter create --platforms=windows .
+          flutter pub get
+          flutter build windows --release
+          
+      - name: Zip Windows Build
+        working-directory: ./apps/app_player/build/windows/x64/runner/Release
+        run: Compress-Archive -Path * -DestinationPath ../../../../../NEXUS_Player_Windows.zip
+        
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-player-artifact
+          path: apps/app_player/NEXUS_Player_Windows.zip
+
   create-release:
     name: Create GitHub Release
-    needs: [build-flutter, build-compose]
+    needs: [build-flutter, build-compose, build-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -81,6 +113,7 @@ jobs:
         run: |
           mv apks/app_player_apk/*.apk ./NEXUS_Player_v${{ github.ref_name || 'latest' }}.apk
           mv apks/app_proxy_apk/*.apk ./NEXUS_Proxy_v${{ github.ref_name || 'latest' }}.apk
+          mv apks/windows-player-artifact/*.zip ./NEXUS_Player_Windows_v${{ github.ref_name || 'latest' }}.zip
           
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -90,11 +123,13 @@ jobs:
           files: |
             ./NEXUS_Player_*.apk
             ./NEXUS_Proxy_*.apk
+            ./NEXUS_Player_Windows_*.zip
           body: |
-            ## 🚀 Automated APK Build
-            Download and install the latest Android applications for the ALL-IN-One-IPTV ecosystem directly to your device!
+            ## 🚀 Automated Multi-Platform Release
+            Download and install the latest applications for the ALL-IN-One-IPTV ecosystem directly to your device!
             
-            * **NEXUS_Player.apk**: The Flutter Unified Media Player (VOD & Live TV)
-            * **NEXUS_Proxy.apk**: The Jetpack Compose Background Optimizer
+            * **NEXUS_Player.apk**: The Flutter Unified Media Player (Android VOD & Live TV)
+            * **NEXUS_Proxy.apk**: The Jetpack Compose Background Optimizer (Android)
+            * **NEXUS_Player_Windows.zip**: The Windows Desktop Native Application
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
