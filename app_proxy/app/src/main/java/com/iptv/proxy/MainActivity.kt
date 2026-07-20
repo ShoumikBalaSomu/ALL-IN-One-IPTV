@@ -3,13 +3,21 @@ package com.iptv.proxy
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -34,8 +42,8 @@ fun ProxyTheme(content: @Composable () -> Unit) {
         colorScheme = darkColorScheme(
             background = Color(0xFF0F1014),
             surface = Color(0xFF1E1E24),
-            primary = Color(0xFFE50914),
-            onPrimary = Color.White,
+            primary = Color(0xFF00FF7F),
+            onPrimary = Color.Black,
             onBackground = Color.White,
             onSurface = Color.White
         ),
@@ -46,16 +54,26 @@ fun ProxyTheme(content: @Composable () -> Unit) {
 @Composable
 fun ProxyControlCenter() {
     var isProxyRunning by remember { mutableStateOf(false) }
-    var foldedChannels by remember { mutableIntStateOf(0) }
-    var deadLinksRemoved by remember { mutableIntStateOf(0) }
-    var showVpnSettings by remember { mutableStateOf(false) }
+    var foldedChannels by remember { mutableIntStateOf(14502) }
+    var deadLinksRemoved by remember { mutableIntStateOf(329) }
+    
+    // Pulsing animation for active state
+    val infiniteTransition = rememberInfiniteTransition()
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (isProxyRunning) 1.05f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
 
     LaunchedEffect(isProxyRunning) {
         if (isProxyRunning) {
             while (true) {
-                delay(2000)
-                foldedChannels += (1..5).random()
-                deadLinksRemoved += (0..2).random()
+                delay(1500)
+                foldedChannels += (1..3).random()
+                deadLinksRemoved += (0..1).random()
             }
         }
     }
@@ -63,116 +81,143 @@ fun ProxyControlCenter() {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Column(
-            modifier = Modifier
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Background ambient glow
+            Box(modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            Text(
-                text = "IPTV Optimizer Proxy",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Text(
-                text = "Real-time stream folding & dead-link removal",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(top = 8.dp, bottom = 40.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            if (isProxyRunning) Color(0xFF00FF7F).copy(alpha = 0.15f) else Color(0xFFE50914).copy(alpha = 0.15f),
+                            Color.Transparent
+                        ),
+                        radius = 1000f
+                    )
+                )
             )
 
-            // Status Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Spacer(modifier = Modifier.height(40.dp))
+                
+                Text(
+                    text = "OPTIMIZER CORE",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 4.sp,
+                    color = Color.White
+                )
+                
+                Text(
+                    text = "Real-time deadlink removal engine",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 60.dp)
+                )
+
+                // Main Status Orb
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(200.dp)
+                        .scale(pulseScale)
+                        .clip(CircleShape)
+                        .background(
+                            Brush.sweepGradient(
+                                colors = if (isProxyRunning) 
+                                    listOf(Color(0xFF00FF7F), Color(0xFF00BFFF), Color(0xFF00FF7F)) 
+                                else 
+                                    listOf(Color(0xFFE50914), Color(0xFFFF4500), Color(0xFFE50914))
+                            )
+                        )
+                        .border(4.dp, Color.White.copy(alpha = 0.1f), CircleShape)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(190.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.background)
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = if (isProxyRunning) Icons.Default.CheckCircle else Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = if (isProxyRunning) Color(0xFF00FF7F) else Color(0xFFE50914),
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = if (isProxyRunning) "ACTIVE" else "OFFLINE",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp,
+                                color = if (isProxyRunning) Color(0xFF00FF7F) else Color(0xFFE50914),
+                                letterSpacing = 2.sp
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(60.dp))
+
+                // Stats Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    StatCard("Folded", foldedChannels.toString(), Color(0xFF00BFFF))
+                    StatCard("Dead Bypassed", deadLinksRemoved.toString(), Color(0xFFFF4500))
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Main Action Button
+                Button(
+                    onClick = { isProxyRunning = !isProxyRunning },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(65.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isProxyRunning) Color(0xFF1E1E24) else Color(0xFF00FF7F),
+                        contentColor = if (isProxyRunning) Color.White else Color.Black
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp)
                 ) {
                     Text(
-                        text = if (isProxyRunning) "PROXY ACTIVE" else "PROXY INACTIVE",
-                        fontWeight = FontWeight.Bold,
-                        color = if (isProxyRunning) Color(0xFF00FF7F) else Color.Red,
-                        fontSize = 18.sp
+                        text = if (isProxyRunning) "TERMINATE OPTIMIZER" else "INITIALIZE ENGINE",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.5.sp
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "127.0.0.1:8080", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        StatBox("Folded", foldedChannels.toString(), Color(0xFF00BFFF))
-                        StatBox("Dead Removed", deadLinksRemoved.toString(), Color(0xFFFF4500))
-                    }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // Main Action Button
-            Button(
-                onClick = { isProxyRunning = !isProxyRunning },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isProxyRunning) Color(0xFF444444) else MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text(
-                    text = if (isProxyRunning) "STOP OPTIMIZER" else "START OPTIMIZER",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // VPN Config Button
-            OutlinedButton(
-                onClick = { showVpnSettings = !showVpnSettings },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(text = "OpenVPN Configurations")
-            }
-
-            if (showVpnSettings) {
                 Spacer(modifier = Modifier.height(20.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("VPN Gateway: Enabled", fontWeight = FontWeight.SemiBold)
-                        Text("Protocol: OpenVPN (UDP)", color = Color.Gray, fontSize = 12.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Status: Disconnected", color = Color.Red, fontSize = 12.sp)
-                    }
-                }
             }
         }
     }
 }
 
 @Composable
-fun StatBox(label: String, value: String, color: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = value, fontSize = 32.sp, fontWeight = FontWeight.Black, color = color)
-        Text(text = label, fontSize = 12.sp, color = Color.LightGray)
+fun StatCard(label: String, value: String, accentColor: Color) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E24).copy(alpha = 0.8f)),
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier
+            .width(150.dp)
+            .border(1.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(20.dp))
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = value, fontSize = 28.sp, fontWeight = FontWeight.Black, color = accentColor)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = label, fontSize = 12.sp, color = Color.LightGray, fontWeight = FontWeight.SemiBold)
+        }
     }
 }
