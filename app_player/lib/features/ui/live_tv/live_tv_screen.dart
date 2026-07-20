@@ -1,71 +1,122 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'channel_provider.dart';
+import 'video_player_widget.dart';
 
-class LiveTVScreen extends StatelessWidget {
+class LiveTVScreen extends ConsumerWidget {
   const LiveTVScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categories = ref.watch(categoriesProvider);
+    final filteredChannels = ref.watch(filteredChannelsProvider);
+    final selectedCategory = ref.watch(selectedCategoryProvider);
+    final selectedChannel = ref.watch(selectedChannelProvider);
+    final playlistAsync = ref.watch(playlistProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Live TV (OTT Navigator UI)'),
+        title: const Text('ALL-IN-One IPTV'),
       ),
-      body: Row(
-        children: [
-          // Sidebar for Categories/Countries
-          Expanded(
-            flex: 2,
-            child: Container(
-              color: Colors.grey[900],
-              child: ListView(
-                children: const [
-                  ListTile(title: Text('All Channels')),
-                  ListTile(title: Text('Sports')),
-                  ListTile(title: Text('News')),
-                  // Add dynamically parsed categories here
-                ],
-              ),
-            ),
-          ),
-          // Center for Channels
-          Expanded(
-            flex: 3,
-            child: Container(
-              color: Colors.grey[850],
-              child: ListView(
-                children: const [
-                  ListTile(title: Text('Channel 1')),
-                  ListTile(title: Text('Channel 2')),
-                ],
-              ),
-            ),
-          ),
-          // Right panel for EPG and Mini Player
-          Expanded(
-            flex: 4,
-            child: Container(
-              color: Colors.black,
-              child: Column(
-                children: [
-                  // Mini Player Placeholder
-                  Container(
-                    height: 250,
-                    color: Colors.black87,
-                    child: const Center(
-                      child: Text('MediaKit Video Player Here'),
+      body: playlistAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error loading playlist: $err')),
+        data: (_) => Row(
+          children: [
+            // Sidebar for Categories/Countries
+            Expanded(
+              flex: 2,
+              child: Container(
+                color: Colors.grey[900],
+                child: ListView(
+                  children: [
+                    ListTile(
+                      title: const Text('All Channels'),
+                      selected: selectedCategory == null,
+                      onTap: () => ref.read(selectedCategoryProvider.notifier).state = null,
                     ),
-                  ),
-                  // EPG Info
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: const Text('EPG Data: Currently playing...'),
-                    ),
-                  ),
-                ],
+                    ...categories.map((category) => ListTile(
+                          title: Text(category),
+                          selected: selectedCategory == category,
+                          onTap: () => ref.read(selectedCategoryProvider.notifier).state = category,
+                        )),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+            // Center for Channels
+            Expanded(
+              flex: 3,
+              child: Container(
+                color: Colors.grey[850],
+                child: ListView.builder(
+                  itemCount: filteredChannels.length,
+                  itemBuilder: (context, index) {
+                    final channel = filteredChannels[index];
+                    return ListTile(
+                      leading: channel.logoUrl.isNotEmpty
+                          ? Image.network(
+                              channel.logoUrl,
+                              width: 40,
+                              height: 40,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.tv),
+                            )
+                          : const Icon(Icons.tv),
+                      title: Text(channel.name),
+                      subtitle: Text(channel.group),
+                      selected: selectedChannel?.tvgId == channel.tvgId && selectedChannel?.name == channel.name,
+                      onTap: () => ref.read(selectedChannelProvider.notifier).state = channel,
+                    );
+                  },
+                ),
+              ),
+            ),
+            // Right panel for Mini Player and Info
+            Expanded(
+              flex: 4,
+              child: Container(
+                color: Colors.black,
+                child: Column(
+                  children: [
+                    // Mini Player
+                    Container(
+                      height: 300,
+                      color: Colors.black87,
+                      child: selectedChannel != null
+                          ? VideoPlayerWidget(url: selectedChannel.activeUrl)
+                          : const Center(
+                              child: Text('Select a channel to play'),
+                            ),
+                    ),
+                    // EPG Info
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: selectedChannel != null
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    selectedChannel.name,
+                                    style: Theme.of(context).textTheme.headlineSmall,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text('Category: ${selectedChannel.group}'),
+                                  const SizedBox(height: 8),
+                                  Text('Sources: ${selectedChannel.fallbackUrls.length}'),
+                                  const SizedBox(height: 16),
+                                  const Text('EPG Data: Not available yet.'),
+                                ],
+                              )
+                            : const Text('No channel selected.'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
