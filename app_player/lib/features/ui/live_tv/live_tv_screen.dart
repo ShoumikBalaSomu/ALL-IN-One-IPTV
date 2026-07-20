@@ -15,7 +15,9 @@ class _LiveTVScreenState extends State<LiveTVScreen> with TickerProviderStateMix
   bool _isSidebarExpanded = false;
   late AnimationController _pulseController;
 
-  final List<String> _categories = ['All Channels', 'Sports', 'News', 'Movies', 'Documentaries', 'Kids', 'Music', 'International'];
+  final List<String> _categories = ['All Channels', 'Favorites', 'Sports', 'News', 'Movies', 'Kids', 'Adult (18+)'];
+  final Set<int> _favorites = {};
+  bool _isAdultUnlocked = false;
 
   @override
   void initState() {
@@ -160,7 +162,7 @@ class _LiveTVScreenState extends State<LiveTVScreen> with TickerProviderStateMix
                     itemBuilder: (context, index) {
                       final isSelected = index == _selectedCategoryIndex;
                       return InkWell(
-                        onTap: () => setState(() => _selectedCategoryIndex = index),
+                        onTap: () => _handleCategoryClick(index),
                         child: Stack(
                           children: [
                             if (isSelected)
@@ -218,13 +220,70 @@ class _LiveTVScreenState extends State<LiveTVScreen> with TickerProviderStateMix
   IconData _getIconForCategory(int index) {
     switch (index) {
       case 0: return Icons.grid_view_rounded;
-      case 1: return Icons.sports_soccer_rounded;
-      case 2: return Icons.article_rounded;
-      case 3: return Icons.movie_rounded;
-      case 4: return Icons.public_rounded;
+      case 1: return Icons.favorite_rounded; // Favorites
+      case 2: return Icons.sports_soccer_rounded;
+      case 3: return Icons.article_rounded;
+      case 4: return Icons.movie_rounded;
       case 5: return Icons.child_care_rounded;
-      case 6: return Icons.music_note_rounded;
+      case 6: return _isAdultUnlocked ? Icons.lock_open_rounded : Icons.lock_rounded; // Adult
       default: return Icons.language_rounded;
+    }
+  }
+
+  Future<void> _handleCategoryClick(int index) async {
+    if (index == 6 && !_isAdultUnlocked) {
+      // Prompt PIN for Adult category
+      final unlocked = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          String pin = "";
+          return AlertDialog(
+            backgroundColor: const Color(0xFF14151E),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: Row(
+              children: const [
+                Icon(Icons.lock, color: Color(0xFFE50914)),
+                SizedBox(width: 12),
+                Text('Parental Control', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: TextField(
+              autofocus: true,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              style: const TextStyle(color: Colors.white, fontSize: 24, letterSpacing: 8),
+              decoration: InputDecoration(
+                hintText: 'PIN (0171)',
+                hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+                filled: true,
+                fillColor: Colors.black,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onChanged: (val) => pin = val,
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE50914)),
+                onPressed: () {
+                  if (pin == "0171") Navigator.pop(context, true);
+                },
+                child: const Text('Unlock', style: TextStyle(color: Colors.white)),
+              )
+            ],
+          );
+        }
+      );
+
+      if (unlocked == true) {
+        setState(() {
+          _isAdultUnlocked = true;
+          _selectedCategoryIndex = index;
+        });
+      }
+    } else {
+      setState(() => _selectedCategoryIndex = index);
     }
   }
 
@@ -271,8 +330,29 @@ class _LiveTVScreenState extends State<LiveTVScreen> with TickerProviderStateMix
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Network Channel ${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text('Network Channel ${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    _favorites.contains(index) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                    color: _favorites.contains(index) ? const Color(0xFFE50914) : Colors.white30,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      if (_favorites.contains(index)) {
+                                        _favorites.remove(index);
+                                      } else {
+                                        _favorites.add(index);
+                                      }
+                                    });
+                                  },
+                                )
+                              ],
+                            ),
+                            const SizedBox(height: 2),
                             Row(
                               children: [
                                 if (isSelected) 
