@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS - Web Player</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- HLS.js for playing .m3u8 streams in browser -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+    <!-- Background Canvas -->
+    <canvas id="particleCanvas"></canvas>
+    
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <i class="fas fa-play-circle" style="color: #00FF7F;"></i>
+                <span>NEXUS</span>
+            </div>
+            
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search channels...">
+            </div>
+
+            <div class="category-header">COUNTRIES / GROUPS</div>
+            <ul class="category-list" id="categoryList">
+                <li class="active" data-group="All">All Channels</li>
+                <!-- Categories injected here -->
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Video Player Area -->
+            <div class="video-container">
+                <video id="videoPlayer" controls autoplay></video>
+                <div class="video-overlay" id="videoOverlay">
+                    <i class="fas fa-tv fa-4x" style="color: rgba(255,255,255,0.2);"></i>
+                    <h2>Select a channel to begin streaming</h2>
+                </div>
+                <div class="now-playing" id="nowPlayingInfo">
+                    <img src="" alt="" id="npLogo" style="display:none;">
+                    <div class="np-text">
+                        <span class="np-badge">LIVE</span>
+                        <h3 id="npTitle">No Channel Selected</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Channel Grid -->
+            <div class="channels-section">
+                <div class="section-header">
+                    <h2 id="currentGroupName">All Channels</h2>
+                    <span class="channel-count" id="channelCount">Loading...</span>
+                </div>
+                <div class="channel-grid" id="channelGrid">
+                    <!-- Channels injected here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
