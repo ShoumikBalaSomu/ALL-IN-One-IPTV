@@ -105,7 +105,7 @@ class _SourcesScreenState extends State<SourcesScreen> with TickerProviderStateM
                             gradient: const LinearGradient(colors: [Color(0xFFE50914), Color(0xFF8A0000)]),
                             boxShadow: [BoxShadow(color: const Color(0xFFE50914).withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 10))],
                           ),
-                          alignment: Alignment.Center,
+                          alignment: Alignment.center,
                           child: const Text('ENTER AS GUEST', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 2)),
                         ),
                       ),

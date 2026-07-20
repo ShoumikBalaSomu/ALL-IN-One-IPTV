@@ -152,15 +152,15 @@ class _VODScreenState extends State<VODScreen> with SingleTickerProviderStateMix
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text('Sci-Fi', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                    Padding(padding: EdgeInsets.symmetric(horizontal: 10.0), child: Icon(Icons.circle, size: 5, color: Colors.white30)),
-                    Text('2014', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                    Padding(padding: EdgeInsets.symmetric(horizontal: 10.0), child: Icon(Icons.circle, size: 5, color: Colors.white30)),
+                  children: [
+                    const Text('Sci-Fi', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 10.0), child: Icon(Icons.circle, size: 5, color: Colors.white30)),
+                    const Text('2014', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 10.0), child: Icon(Icons.circle, size: 5, color: Colors.white30)),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(border: Border.all(color: Colors.white54), borderRadius: BorderRadius.circular(4)),
-                      child: Text('4K HDR', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      child: const Text('4K HDR', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
