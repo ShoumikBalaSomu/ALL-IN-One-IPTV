@@ -21,12 +21,23 @@ We do not own, host, or broadcast any of the streams or playlists provided in th
 1. `output/combined_by_country.m3u` - Aggregated and folded playlists.
 2. `output/checked_combined_by_country.m3u` - Only contains streams that are actively alive at the time of the latest update.
 
-## Future Plans (Apps & UI)
+## Apps & UI Included in this Repository
 
-We are planning to build an ultimate web and cross-platform app (Windows, Linux, Android) which will include:
-1. **Movie/Series Section**: Netflix-like premium UI/UX.
-2. **IPTV Section**: OTT Navigator-like features with EPG, Sorting, Blocking, Folding, and Numbering.
-3. **Advanced Proxy & Optimizer App**: A companion app to provide real-time dead-link removal and optimal proxy to any standard IPTV player.
+This repository includes a complete ecosystem of tools and applications:
+
+1. **Flutter Unified Player (`app_player`)**: A cross-platform app (Windows, Linux, Android) featuring:
+   - **Movie/Series Section**: Netflix-like premium UI/UX.
+   - **IPTV Section**: OTT Navigator-like features with EPG toggles, glassmorphism UI, Category sidebars, and smooth channel lists.
+2. **Web Player (`web-player`)**: A Vite-based React player providing the same premium experience for browsers.
+3. **Android Optimizer Proxy (`app_proxy`)**: A companion Android app acting as an interceptor. It provides:
+   - Real-time stream folding (HTTP HEAD testing).
+   - Dynamic redirecting to the best performing link without dead streams.
+   - Premium Jetpack Compose UI for VPN and Proxy management.
+4. **Custom Input Support**: Place your encrypted or unencrypted `.m3u` files in the `input/` folder, and the aggregator will merge them.
+
+## Future Works
+
+- **Torrent IPTV (P2P)**: Implementing a peer-to-peer streaming logic to ensure zero buffering by distributing stream loads across viewers.
 
 ## Thanks & Credits
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'features/ui/live_tv/live_tv_screen.dart';
+import 'features/ui/sources_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         primarySwatch: Colors.blue,
       ),
-      home: const LiveTVScreen(),
+      home: const SourcesScreen(),
     );
   }
 }

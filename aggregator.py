@@ -108,33 +108,51 @@ class Channel:
             return f"{self.extinf}\n{headers_str}\n{self.url}"
         return f"{self.extinf}\n{self.url}"
 
+def parse_playlist_lines(lines, channels):
+    current_extinf = None
+    current_headers = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith("#EXTINF"):
+            current_extinf = line
+            current_headers = []
+        elif line.startswith("#EXTVLCOPT") or line.startswith("#KODIPROP"):
+            current_headers.append(line)
+        elif not line.startswith("#"):
+            if current_extinf:
+                channels.append(Channel(current_extinf, line, current_headers))
+            current_extinf = None
+            current_headers = []
+
 def fetch_playlists():
     channels = []
-    print("Fetching playlists...")
+    print("Fetching remote playlists...")
     for url in PLAYLISTS:
         try:
             print(f"Fetching {url}")
             resp = requests.get(url, timeout=10)
             if resp.status_code == 200:
                 lines = resp.text.splitlines()
-                current_extinf = None
-                current_headers = []
-                for line in lines:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    if line.startswith("#EXTINF"):
-                        current_extinf = line
-                        current_headers = []
-                    elif line.startswith("#EXTVLCOPT") or line.startswith("#KODIPROP"):
-                        current_headers.append(line)
-                    elif not line.startswith("#"):
-                        if current_extinf:
-                            channels.append(Channel(current_extinf, line, current_headers))
-                        current_extinf = None
-                        current_headers = []
+                parse_playlist_lines(lines, channels)
         except Exception as e:
             print(f"Failed to fetch {url}: {e}")
+            
+    print("Reading local playlists from input folder...")
+    input_dir = "input"
+    if os.path.exists(input_dir):
+        for filename in os.listdir(input_dir):
+            if filename.endswith(".m3u") or filename.endswith(".m3u8"):
+                filepath = os.path.join(input_dir, filename)
+                print(f"Reading local file: {filepath}")
+                try:
+                    with open(filepath, "r", encoding="utf-8") as f:
+                        lines = f.read().splitlines()
+                        parse_playlist_lines(lines, channels)
+                except Exception as e:
+                    print(f"Failed to read local file {filename}: {e}")
+                    
     return channels
 
 def deduplicate_and_fold(channels):
