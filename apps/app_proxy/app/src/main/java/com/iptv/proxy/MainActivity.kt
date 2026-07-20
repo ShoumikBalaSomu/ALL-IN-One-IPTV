@@ -97,7 +97,7 @@ fun ProxyDashboard() {
                 contentColor = MaterialTheme.colorScheme.primary,
                 shape = CircleShape
             ) {
-                Icon(Icons.Outlined.VpnKey, contentDescription = "VPN Settings")
+                Icon(Icons.Default.Lock, contentDescription = "VPN Settings")
             }
         }
     ) { padding ->
@@ -137,7 +137,7 @@ fun ProxyDashboard() {
                         )
                     }
                     Icon(
-                        imageVector = Icons.Default.NetworkPing,
+                        imageVector = Icons.Default.Refresh,
                         contentDescription = null,
                         tint = if (isProxyActive) MaterialTheme.colorScheme.primary else Color.Gray,
                         modifier = Modifier.size(32.dp)
@@ -161,14 +161,14 @@ fun ProxyDashboard() {
                         title = "FOLDED",
                         value = String.format("%,d", foldedCount),
                         accent = MaterialTheme.colorScheme.primary,
-                        icon = Icons.Outlined.MergeType
+                        icon = Icons.Default.Share
                     )
                     CyberStatCard(
                         modifier = Modifier.weight(1f),
                         title = "BLOCKED",
                         value = String.format("%,d", blockedCount),
                         accent = MaterialTheme.colorScheme.tertiary,
-                        icon = Icons.Outlined.Block
+                        icon = Icons.Default.Warning
                     )
                 }
 
@@ -289,7 +289,7 @@ fun CoreReactor(isActive: Boolean) {
         // Center Status
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
-                imageVector = if (isActive) Icons.Default.Shield else Icons.Default.GppBad,
+                imageVector = if (isActive) Icons.Default.Lock else Icons.Default.Clear,
                 contentDescription = null,
                 tint = if (isActive) Color(0xFF00E5FF) else Color(0xFFFF0055),
                 modifier = Modifier.size(48.dp)
@@ -320,7 +320,7 @@ fun CyberStatCard(modifier: Modifier = Modifier, title: String, value: String, a
         
         Column(
             modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 16.dp, end = 16.dp),
-            crossAxisAlignment = CrossAxisAlignment.Start
+            horizontalAlignment = Alignment.Start
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null, tint = accent.copy(alpha = 0.8f), modifier = Modifier.size(16.dp))
@@ -351,7 +351,7 @@ fun BandwidthMeter(bandwidth: Float, isActive: Boolean) {
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.Speed, contentDescription = null, tint = Color.Gray)
+            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Gray)
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -414,7 +414,7 @@ fun VpnSettingsSheet() {
             onValueChange = {},
             label = { Text("OpenVPN Profile (.ovpn)") },
             modifier = Modifier.fillMaxWidth(),
-            trailingIcon = { Icon(Icons.Outlined.Folder, contentDescription = null) },
+            trailingIcon = { Icon(Icons.Default.Settings, contentDescription = null) },
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
                 focusedBorderColor = MaterialTheme.colorScheme.primary
