@@ -1,87 +1,97 @@
 <div align="center">
-  
-# 📺 ALL-IN-One-IPTV
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub issues](https://img.shields.io/github/issues/ShoumikBalaSomu/ALL-IN-One-IPTV)](https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/issues)
-[![GitHub stars](https://img.shields.io/github/stars/ShoumikBalaSomu/ALL-IN-One-IPTV)](https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/stargazers)
-[![Update Playlists](https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/actions/workflows/update.yml/badge.svg)](https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/actions)
+<img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=200&section=header&text=ALL-IN-One-IPTV&fontSize=60&fontColor=ffffff&animation=fadeIn" width="100%"/>
 
-**The ultimate, automated IPTV helper, aggregator, and cross-platform ecosystem.**  
-*Our dream is to provide the best all-in-one IPTV solution by combining, optimizing, and organizing publicly available IPTV playlists into a single, high-performance experience.*
+# ✨ The Ultimate IPTV Ecosystem
 
-[**Read More About The Project**](./ABOUT.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-00FF7F.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Update Status](https://img.shields.io/github/actions/workflow/status/ShoumikBalaSomu/ALL-IN-One-IPTV/update.yml?style=for-the-badge&logo=githubactions)](https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/actions)
+[![Stars](https://img.shields.io/github/stars/ShoumikBalaSomu/ALL-IN-One-IPTV?style=for-the-badge&color=yellow)](https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/stargazers)
+
+<br/>
+
+> **Our Dream:** To provide the most powerful, automated, and visually stunning all-in-one IPTV Helper, archiving, and proxy tool for the community. Completely free, open-source, and legally compliant.
+
+<br/>
+
+[📖 Read the Full Architecture & Vision in ABOUT.md](./ABOUT.md)
 
 </div>
 
----
+<br/>
 
-## ⚡ Core Features
+## 🚀 Live Generated Playlists
 
-- **🤖 Automated Aggregation:** Automatically collects and merges playlists from various public repositories daily via GitHub Actions.
-- **🧹 Smart Deduplication:** Intelligently folds identical channels based on titles and removes duplicate URLs.
-- **🍪 Cookie Preservation:** Automatically detects and preserves channels requiring authentication tokens or cookies.
-- **🏥 Parallel Health Checks:** Validates thousands of streams concurrently using HTTP HEAD requests to ensure you only get working links.
-- **🌍 Geo-Organization:** Automatically groups channels by country and category for a clean EPG experience.
-- **📁 Custom Input Support:** Place your own `.m3u` or `.m3u8` playlists (encrypted or unencrypted) in the `input/` folder to seamlessly merge them with the master list.
+These playlists are constantly updated, scraped, and validated in real-time. Plug these direct links into your favorite player!
 
----
-
-## 📦 Generated Playlists
-
-You can plug these directly into your favorite IPTV player! They are updated automatically.
+<div align="center">
 
 | Playlist Type | Description | Link |
-| --- | --- | --- |
-| 🌍 **Combined & Folded** | The massive master list with duplicates grouped by country. | [Download M3U](https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/combined_by_country.m3u) |
-| ✅ **Checked & Alive** | The strictly checked version. Dead links are removed. | [Download M3U](https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/checked_combined_by_country.m3u) |
+| :---: | :--- | :---: |
+| 🌍 **Master Combined** | The massive collection, expertly folded and grouped by country. | <kbd>[Download M3U](https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/combined_by_country.m3u)</kbd> |
+| 🟢 **100% Alive (Checked)** | Our proxy validates streams. This list contains **zero dead links**. | <kbd>[Download M3U](https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/checked_combined_by_country.m3u)</kbd> |
 
----
+</div>
 
-## 📱 Ecosystem Apps included
+<br/>
 
-This repository isn't just a playlist aggregator; it contains a suite of premium applications designed to give you the best viewing experience:
+## 🔮 Core System Features
+
+<details open>
+<summary><b>🔥 Click to expand features</b></summary>
+<br/>
+
+- **🤖 Automated Aggregation:** Automatically merges playlists from 40+ public GitHub repositories every single day via GitHub Actions.
+- **🧹 Intelligent Deduplication:** Recognizes the same channels across different providers and seamlessly folds them into backup URL clusters.
+- **🍪 Authentication Preservation:** Safely retains URLs that require specific cookies or tokens.
+- **🏥 Concurrent Health Checks:** Pings thousands of video streams concurrently using `HTTP HEAD` to eliminate buffering and dead links.
+- **📁 Your Own Playlists:** Place custom `.m3u` or `.m3u8` files (encrypted or plain) directly in the `input/` folder, and the system handles the rest.
+
+</details>
+
+<br/>
+
+## 📱 The Ecosystem (Apps & UI)
+
+Why settle for boring media players? We built our own suite of tools!
 
 ### 1. Flutter Unified Player (`app_player/`)
-A cross-platform application built with Flutter (Windows, Linux, Android) providing a premium viewing experience:
-- 🎬 **Movie/Series Section:** Features a stunning, Netflix-inspired UI with hero banners and carousels.
-- 📺 **Live TV Section:** Inspired by OTT Navigator, featuring glassmorphism, category sidebars, and an integrated EPG.
-- 🔗 **Multi-Source Support:** Accepts Xtream Codes, MAC Portal, Emby/Jellyfin, Plex, and standard M3U links.
+Experience IPTV and VOD like never before on Windows, Linux, and Android.
+* 🎬 **VOD Cinema:** Netflix-inspired Glassmorphism UI with smooth carousels and massive hero trailers.
+* 📺 **Live TV Explorer:** Inspired by OTT Navigator, featuring side-bar grouping and an interactive EPG.
+* 🔗 **Universal Source Login:** Native support for standard M3U, Xtream Codes API, MAC Portals, Emby, and Plex credentials!
 
-### 2. Android Optimizer Proxy (`app_proxy/`)
-A background interceptor app for Android, built with Jetpack Compose:
-- 🚀 **Real-time Stream Folding:** Tests fallback URLs instantly to ensure zero downtime.
-- 🔀 **Dynamic Redirection:** Redirects your player to the healthiest stream.
-- 🛡️ **VPN/Proxy Integration:** Beautiful control center for OpenVPN integration.
+### 2. Optimizer Proxy (`app_proxy/`)
+A background superhero for Android devices (Jetpack Compose).
+* 🔀 **Fallback Switching:** Detects broken streams and immediately routes your media player to a backup without skipping a beat.
+* 🛡️ **Built-in Control Center:** An exquisite UI to toggle the optimizer and configure OpenVPN gateways.
 
-### 3. Web Player (`web-player/`)
-A Vite + React-based frontend providing the same premium unified experience directly in your browser.
+### 3. Next-Gen Web Player (`web-player/`)
+A zero-install React/Vite web platform mimicking the native apps for instant browser streaming.
 
----
+<br/>
 
-## 🚀 Future Roadmap
+## 🗺️ Roadmap to the Future
 
-- [ ] **Torrent IPTV (P2P):** Implement WebRTC/Libtorrent peer-to-peer streaming to distribute loads across viewers, effectively eliminating buffering for highly watched channels.
-- [ ] **Advanced EPG Scraping:** Automated syncing of EPG data for obscure regional channels.
+* 🕸️ **Torrent IPTV (P2P):** We are integrating WebRTC and libtorrent logic to share chunks amongst viewers—achieving **zero buffer times** during high-demand broadcasts.
+* 📈 **AI Content Discovery:** Automated AI recommendations based on your viewing habits.
 
----
+<br/>
 
-## 🙏 Acknowledgements & Credits
+## 🙏 Heartfelt Acknowledgements
 
-This project stands on the shoulders of giants. We want to extend our deepest gratitude to the incredible open-source playlist maintainers:
+This ecosystem is built on the incredible work of the open-source community. Massive thanks to the playlist maintainers:
 
 `@sm-monirulislam` • `@abusaeeidx` • `@Mrbotrx` • `@johirxofficial` • `@tahsinulmohsin` • `@ashik4u` • `@opensourceflix` • `@sanjoykb` • `@alberttartas` • `@Love4vn` • `@BuddyChewChew` • `@alex4528y` • `@judy-gotv` 
 
-*And all other open-source contributors making free IPTV accessible to everyone!*
-
----
+<br/>
 
 ## ⚖️ Legal Disclaimer
 
-**We do not own, host, or broadcast any of the streams or playlists provided in this repository.** We are exclusively aggregating publicly available, free-to-air links found across the internet. This project is meant for educational and organizational purposes only. Please use this responsibly and ensure you comply with your local copyright laws. See [ABOUT.md](./ABOUT.md) for more details.
+> **Notice:** We do not own, host, retransmit, or broadcast any of the streams or media provided in this repository. We merely aggregate publicly available hyperlinks found across the internet. This tool is for educational purposes. Users are responsible for ensuring they comply with local laws.
 
----
+<br/>
 
 <div align="center">
-  <i>Built with ❤️ for the open-source community.</i>
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=80&section=footer" width="100%"/>
 </div>
