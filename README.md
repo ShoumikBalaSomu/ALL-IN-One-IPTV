@@ -64,7 +64,7 @@ We didn't just build a scraper; we built an entire suite of ultra-premium applic
   <tr>
     <td width="33%" align="center">
       <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/flutter/flutter.png" width="60"/><br/>
-      <b>1. Unified Player</b><br/><i>(app_player/)</i><br/><br/>
+      <b>1. Unified Player</b><br/><i>(apps/app_player/)</i><br/><br/>
       An absolute visual masterpiece built in Flutter. Features deep-space particle animations, glassmorphism UI, a Netflix-style Cinema Mode, and an OTT Navigator-inspired Live TV EPG.
       <br/><br/>
       <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/releases/latest">
@@ -73,7 +73,7 @@ We didn't just build a scraper; we built an entire suite of ultra-premium applic
     </td>
     <td width="33%" align="center">
       <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/kotlin/kotlin.png" width="60"/><br/>
-      <b>2. Proxy Optimizer</b><br/><i>(app_proxy/)</i><br/><br/>
+      <b>2. Proxy Optimizer</b><br/><i>(apps/app_proxy/)</i><br/><br/>
       A Jetpack Compose cyber-dashboard for Android. Runs silently in the background, intercepting video requests to instantly route you to the fastest fallback server if a link dies.
       <br/><br/>
       <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/releases/latest">

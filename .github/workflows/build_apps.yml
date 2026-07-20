@@ -27,7 +27,7 @@ jobs:
           cache: true
           
       - name: Build Flutter APK
-        working-directory: ./app_player
+        working-directory: ./apps/app_player
         run: |
           flutter pub get
           flutter build apk --release --split-per-abi
@@ -36,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app_player_apk
-          path: app_player/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+          path: apps/app_player/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
 
   build-compose:
     name: Build Proxy Optimizer (APK)
@@ -52,18 +52,18 @@ jobs:
           cache: 'gradle'
           
       - name: Make gradlew executable
-        working-directory: ./app_proxy
+        working-directory: ./apps/app_proxy
         run: chmod +x gradlew
         
       - name: Build Compose APK
-        working-directory: ./app_proxy
+        working-directory: ./apps/app_proxy
         run: ./gradlew assembleRelease
         
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app_proxy_apk
-          path: app_proxy/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: apps/app_proxy/app/build/outputs/apk/release/app-release-unsigned.apk
 
   create-release:
     name: Create GitHub Release
