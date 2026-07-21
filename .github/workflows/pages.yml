@@ -4,6 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
+      - '.github/pages/**'
       - 'output/**'
   workflow_dispatch:
 
@@ -22,20 +23,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Setup Pages
-        uses: actions/configure-pages@v5
-        
-      - name: Upload artifact
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './output'
-          
+          path: '.github/pages'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
