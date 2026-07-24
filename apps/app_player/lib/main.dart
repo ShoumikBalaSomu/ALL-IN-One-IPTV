@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
-import 'features/ui/live_tv/live_tv_screen.dart';
-import 'features/ui/sources_screen.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'features/ui/main_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,12 +15,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ALL-IN-One-IPTV',
+      title: 'ALL-IN-One IPTV',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.transparent,
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFE50914), // Netflix Red
+          secondary: Color(0xFF00C6FF), // Neon Blue
+          surface: Color(0xFF0F172A),
+        ),
       ),
-      home: const SourcesScreen(),
+      home: const MainScreen(),
     );
   }
 }
