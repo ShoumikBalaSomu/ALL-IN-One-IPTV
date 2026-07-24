@@ -17,8 +17,10 @@ class _VODScreenState extends State<VODScreen> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    // Configure system UI for immersive experience
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarIconBrightness: Brightness.light));
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ));
     
     _scrollController = ScrollController()..addListener(() {
       setState(() { _scrollOffset = _scrollController.offset; });
@@ -62,7 +64,6 @@ class _VODScreenState extends State<VODScreen> with SingleTickerProviderStateMix
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -76,15 +77,15 @@ class _VODScreenState extends State<VODScreen> with SingleTickerProviderStateMix
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: blurAmount, sigmaY: blurAmount),
           child: Container(
-            color: Color(0xFF070709).withOpacity(bgOpacity),
+            color: const Color(0xFF070709).withValues(alpha: bgOpacity),
             padding: const EdgeInsets.only(top: 40, left: 24, right: 24, bottom: 10),
             child: Row(
               children: [
                 const Text('CINEMA', style: TextStyle(color: Color(0xFFE50914), fontWeight: FontWeight.w900, fontSize: 28, letterSpacing: 3)),
                 const Spacer(),
-                Icon(Icons.cast, color: Colors.white.withOpacity(0.8), size: 28),
+                Icon(Icons.cast, color: Colors.white.withValues(alpha: 0.8), size: 28),
                 const SizedBox(width: 20),
-                Icon(Icons.search, color: Colors.white.withOpacity(0.8), size: 28),
+                Icon(Icons.search, color: Colors.white.withValues(alpha: 0.8), size: 28),
                 const SizedBox(width: 20),
                 Container(
                   width: 36, height: 36,
@@ -104,75 +105,78 @@ class _VODScreenState extends State<VODScreen> with SingleTickerProviderStateMix
 
   Widget _buildAnimatedHero() {
     return SizedBox(
-      height: 600,
+      height: 520,
       width: double.infinity,
       child: Stack(
-        fit: StackFit.expand,
         children: [
-          // Slowly zooming background image
-          AnimatedBuilder(
-            animation: _heroAnimController,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: 1.0 + (_heroAnimController.value * 0.1),
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2000&auto=format&fit=crop',
-                  fit: BoxFit.cover,
-                  color: Colors.black.withOpacity(0.2), // slight darken
-                  colorBlendMode: BlendMode.darken,
-                ),
-              );
-            }
+          Positioned.fill(
+            child: Image.network(
+              'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1000',
+              fit: BoxFit.cover,
+            ),
           ),
-          // Complex fading gradient
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFF070709).withOpacity(0.6),
-                  Colors.transparent,
-                  const Color(0xFF070709).withOpacity(0.5),
-                  const Color(0xFF070709).withOpacity(0.9),
-                  const Color(0xFF070709),
-                ],
-                stops: const [0.0, 0.2, 0.6, 0.85, 1.0],
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    const Color(0xFF070709).withValues(alpha: 0.5),
+                    const Color(0xFF070709),
+                  ],
+                ),
               ),
             ),
           ),
-          // Hero Content
           Positioned(
-            bottom: 60,
-            left: 0,
-            right: 0,
+            left: 24, right: 24, bottom: 60,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Interstellar_logo.svg/1200px-Interstellar_logo.svg.png', width: 250, color: Colors.white),
-                const SizedBox(height: 20),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Sci-Fi', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 10.0), child: Icon(Icons.circle, size: 5, color: Colors.white30)),
-                    const Text('2014', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 10.0), child: Icon(Icons.circle, size: 5, color: Colors.white30)),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(border: Border.all(color: Colors.white54), borderRadius: BorderRadius.circular(4)),
-                      child: const Text('4K HDR', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE50914),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text('TOP 10', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                    const SizedBox(width: 10),
+                    const Text('#1 in Movies Today', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text('CYBERPUNK 2088', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 40, letterSpacing: 2)),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.play_arrow, color: Colors.black, size: 28),
+                      label: const Text('Play', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    OutlinedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.add, color: Colors.white, size: 24),
+                      label: const Text('My List', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white, width: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildHeroButton(Icons.play_arrow_rounded, 'Play', Colors.white, Colors.black),
-                    const SizedBox(width: 16),
-                    _buildHeroButton(Icons.add, 'My List', Colors.white.withOpacity(0.2), Colors.white),
-                  ],
-                )
               ],
             ),
           ),
@@ -181,126 +185,42 @@ class _VODScreenState extends State<VODScreen> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildHeroButton(IconData icon, String label, Color bgColor, Color textColor) {
-    return Material(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-          child: Row(
-            children: [
-              Icon(icon, size: 26, color: textColor),
-              const SizedBox(width: 8),
-              Text(label, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryRow(String title, bool isLarge, {bool isTop10 = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 20.0, bottom: 12.0, top: 24.0),
-          child: Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -0.5)),
-        ),
-        SizedBox(
-          height: isLarge ? 240 : 180,
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: 10,
-            itemBuilder: (context, index) {
-              return Container(
-                width: isLarge ? 160 : 120,
-                margin: const EdgeInsets.only(right: 12),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    // Movie Poster with scale on hover/press simulation
-                    Positioned.fill(
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {},
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: const Color(0xFF1E1E24),
-                              image: DecorationImage(
-                                image: NetworkImage('https://picsum.photos/300/450?random=${title.hashCode + index}'),
-                                fit: BoxFit.cover,
-                              ),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10, offset: const Offset(0, 5))],
-                            ),
-                          ),
-                        ),
-                      ),
+  Widget _buildCategoryRow(String title, bool isHeroRow, {bool isTop10 = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 24, bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20, letterSpacing: 0.5)),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: isTop10 ? 200 : 160,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: 10,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: isTop10 ? 140 : 110,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: NetworkImage('https://picsum.photos/seed/${title.hashCode + index}/300/450'),
+                      fit: BoxFit.cover,
                     ),
-                    if (isTop10)
-                      Positioned(
-                        left: -15,
-                        bottom: -25,
-                        child: Stack(
-                          children: [
-                            Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                fontSize: 130,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -10,
-                                foreground: Paint()..style = PaintingStyle.stroke..strokeWidth = 6..color = Colors.black,
-                              ),
-                            ),
-                            Text(
-                              '${index + 1}',
-                              style: const TextStyle(
-                                fontSize: 130,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: -10,
-                              ),
-                            ),
-                          ],
-                        ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [Colors.black, Colors.black.withOpacity(0.9), Colors.transparent],
-        ),
-      ),
-      child: BottomNavigationBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white54,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.play_circle_outline), label: 'New & Hot'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_circle_outlined), label: 'My Space'),
         ],
       ),
     );
