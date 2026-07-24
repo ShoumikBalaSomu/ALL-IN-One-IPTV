@@ -1,111 +1,67 @@
 """
-Channel Folder — Fold duplicate channels into single entries with multiple URLs.
-
-When the same channel appears from multiple sources, fold them into a single
-channel entry that lists all stream URLs. The player can then try each URL
-until one works.
+Folder — Output formatting utilities for M3U and JSON exports.
 """
 
-import re
-from collections import defaultdict
+import json
+from typing import List
+from dataclasses import asdict
 
-from .utils import setup_logging, normalize_channel_name
-
-logger = setup_logging("engine.folder")
+from .parser import Stream
 
 
-class ChannelFolder:
-    """Fold channels with similar names into groups with multiple URLs."""
+def to_m3u(streams: List[Stream]) -> str:
+    """
+    Convert a list of streams to M3U format string.
 
-    def fold(self, channels: list[dict]) -> list[dict]:
-        """Fold channels by normalized name within each group.
+    Args:
+        streams: List of Stream objects.
 
-        Returns a list where each entry represents a unique channel,
-        potentially with multiple stream URLs.
-        """
-        # Group by (country_group, normalized_name)
-        folded_map: dict[str, dict] = {}
+    Returns:
+        M3U-formatted string.
+    """
+    lines = ["#EXTM3U", ""]
 
-        for ch in channels:
-            group = ch.get("group", "Uncategorized")
-            norm_name = normalize_channel_name(ch.get("name", ""))
+    for stream in streams:
+        attrs = []
+        if stream.tvg_id:
+            attrs.append(f'tvg-id="{stream.tvg_id}"')
+        if stream.tvg_name:
+            attrs.append(f'tvg-name="{stream.tvg_name}"')
+        if stream.tvg_logo:
+            attrs.append(f'tvg-logo="{stream.tvg_logo}"')
+        if stream.group_title:
+            attrs.append(f'group-title="{stream.group_title}"')
+        if stream.tvg_language:
+            attrs.append(f'tvg-language="{stream.tvg_language}"')
+        if stream.tvg_country:
+            attrs.append(f'tvg-country="{stream.tvg_country}"')
 
-            if not norm_name:
-                norm_name = "unknown"
+        attr_str = ' '.join(attrs)
+        if attr_str:
+            lines.append(f'#EXTINF:-1 {attr_str},{stream.name}')
+        else:
+            lines.append(f'#EXTINF:-1,{stream.name}')
+        lines.append(stream.url)
 
-            key = f"{group}|||{norm_name}"
+    return "\n".join(lines) + "\n"
 
-            if key not in folded_map:
-                # First occurrence — create folded entry
-                folded_map[key] = {
-                    "name": ch.get("name", "Unknown"),
-                    "tvg_id": ch.get("tvg_id", ""),
-                    "tvg_name": ch.get("tvg_name", ""),
-                    "tvg_country": ch.get("tvg_country", ""),
-                    "tvg_logo": ch.get("tvg_logo", ""),
-                    "group": group,
-                    "group_title": ch.get("group_title", ""),
-                    "url": ch["url"],
-                    "urls": [ch["url"]],  # All URLs for this channel
-                    "extinf": ch.get("extinf", ""),
-                    "vlc_opts": ch.get("vlc_opts", []),
-                    "kodi_props": ch.get("kodi_props", []),
-                    "http_headers": ch.get("http_headers", []),
-                    "has_cookies": ch.get("has_cookies", False),
-                    "_norm_name": norm_name,
-                    "_sources": [ch.get("source", "")],
-                }
-            else:
-                # Merge additional URL
-                existing = folded_map[key]
-                existing["urls"].append(ch["url"])
-                existing["_sources"].append(ch.get("source", ""))
 
-                # Prefer entries with logos
-                if not existing["tvg_logo"] and ch.get("tvg_logo"):
-                    existing["tvg_logo"] = ch["tvg_logo"]
+def to_json(streams: List[Stream], indent: int = 2) -> str:
+    """
+    Convert a list of streams to JSON format.
 
-                # Prefer entries with TVG IDs
-                if not existing["tvg_id"] and ch.get("tvg_id"):
-                    existing["tvg_id"] = ch["tvg_id"]
+    Args:
+        streams: List of Stream objects.
+        indent: JSON indentation level.
 
-                # Track if any URL has cookies
-                if ch.get("has_cookies"):
-                    existing["has_cookies"] = True
-
-                # Merge VLC opts (unique)
-                for opt in ch.get("vlc_opts", []):
-                    if opt not in existing["vlc_opts"]:
-                        existing["vlc_opts"].append(opt)
-
-        result = list(folded_map.values())
-
-        # Sort by group, then name
-        result.sort(key=lambda c: (c["group"], c["_norm_name"]))
-
-        folded_count = sum(1 for c in result if len(c["urls"]) > 1)
-        logger.info(
-            f"Folding: {len(channels)} entries → {len(result)} channels "
-            f"({folded_count} with multiple URLs)"
-        )
-
-        return result
-
-    def unfold(self, folded_channels: list[dict]) -> list[dict]:
-        """Unfold folded channels back to flat list (one URL per entry).
-
-        Useful for exporting to standard M3U format.
-        """
-        flat = []
-        for ch in folded_channels:
-            urls = ch.get("urls", [ch["url"]])
-            for i, url in enumerate(urls):
-                entry = dict(ch)
-                entry["url"] = url
-                if i == 0:
-                    entry["name"] = ch["name"]
-                else:
-                    # Append URL count for non-primary URLs
-                    entry["name"] = ch["name"]
-                flat.append(entry)
-        return flat
+    Returns:
+        JSON-formatted string.
+    """
+    data = {
+        "metadata": {
+            "generator": "ALL-IN-ONE IPTV Engine v2.0.0",
+            "total_streams": len(streams),
+        },
+        "streams": [asdict(s) for s in streams],
+    }
+    return json.dumps(data, indent=indent, ensure_ascii=False)

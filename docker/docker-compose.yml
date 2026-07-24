@@ -1,27 +1,20 @@
 version: '3.8'
 
 services:
-  all-in-one-iptv:
-    build: .
-    image: shoumikbalasomu/all-in-one-iptv:latest
-    container_name: iptv_edge_gateway
+  engine:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: iptv-engine
     restart: unless-stopped
-    
-    # Required for mDNS/SSDP local network discovery by the Player app
-    network_mode: "host"
-    
-    # Alternatively, if host networking is disabled on your NAS, use ports:
-    # ports:
-    #   - "8080:8080" # Proxy Server / API
-    #   - "9090:9090" # Local P2P Timeshift
-    
-    environment:
-      - TZ=UTC
-      - ENV_PLAYLIST_KEY=${ENV_PLAYLIST_KEY} # Securely injected
-      
     volumes:
-      # Persist configuration and M3U files
-      - ./config:/app/input
-      - ./output:/app/output
-      # Mount external NAS volume for Server-Side PVR Timeshifting
-      - /mnt/nas/recordings:/app/recordings
+      - ../input:/app/input
+      - ../output:/app/output
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=UTC
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,38 +1,28 @@
-# Stage 1: Build the Ktor Proxy Engine (Java/Kotlin)
-FROM gradle:8.5-jdk17-alpine AS builder
-WORKDIR /app
-COPY app_proxy/ ./
-# Run the Gradle build (shadowJar assuming it's configured in Ktor)
-# RUN ./gradlew buildFatJar --no-daemon
-
-# Stage 2: Final Multi-Arch Alpine Image
-FROM alpine:latest
-
-# Install dependencies for both the Aggregator (Python) and Proxy (Java)
-RUN apk add --no-cache python3 py3-pip openjdk17-jre tzdata
+# Build stage
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
+COPY engine/requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
 
-# Copy Python Backend (Phase 1)
-COPY backend/colab_encryptor.py backend/
-COPY backend/scraper.py backend/
-COPY backend/requirements.txt backend/
+# Final stage
+FROM python:3.12-slim
 
-# Install Python requirements
-RUN pip3 install --break-system-packages -r backend/requirements.txt || pip3 install --break-system-packages aiohttp pycryptodome thefuzz
+LABEL maintainer="ShoumikBalaSomu"
+LABEL description="ALL-IN-ONE IPTV Engine"
 
-# Copy Java Proxy (Phase 3)
-# COPY --from=builder /app/app/build/libs/*-all.jar /app/proxy.jar
+WORKDIR /app
 
-# Expose Local Proxy Port
-EXPOSE 8080
+# Copy dependencies
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
 
-# Environment Variables
-ENV ENV_PLAYLIST_KEY=""
-ENV TZ="UTC"
+# Copy application code
+COPY engine/ ./engine/
+COPY output/ ./output/
 
-# Run a start script that boots both the Proxy and Cron Aggregator
-COPY backend/start.sh backend/
-RUN chmod +x backend/start.sh
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD python -c "import sys; sys.exit(0)"
 
-CMD ["backend/start.sh"]
+CMD ["python", "-m", "engine.src"]

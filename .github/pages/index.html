@@ -3,388 +3,411 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALL-IN-One IPTV — The Ultimate Free IPTV Ecosystem</title>
-    <meta name="description" content="Free, auto-updated IPTV playlists combined from 60+ public sources. Zero dead links. Grouped by country.">
+    <title>ALL-IN-ONE IPTV | Premium Open Source IPTV</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0f;
-            color: #e0e0e0;
-            min-height: 100vh;
+        :root {
+            --bg-color: #050505;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-1: #ff2a5f;
+            --accent-2: #4318ff;
+            --accent-3: #00d2ff;
+            --text-main: #f0f0f0;
+            --text-muted: #999;
         }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Animated Gradient Background */
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: linear-gradient(45deg, var(--bg-color), #0a0a1a, #1a0b1c);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        .ambient-light {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .light-1 {
+            top: -10%; left: -10%; width: 50vw; height: 50vw;
+            background: radial-gradient(circle, var(--accent-2) 0%, transparent 70%);
+            animation: float 20s infinite alternate;
+        }
+
+        .light-2 {
+            bottom: -10%; right: -10%; width: 60vw; height: 60vw;
+            background: radial-gradient(circle, var(--accent-1) 0%, transparent 70%);
+            animation: float 25s infinite alternate-reverse;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(100px, 50px); }
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+        }
+
+        /* Navbar */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 5%;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--accent-3), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links a {
+            color: var(--text-main);
+            text-decoration: none;
+            margin-left: 30px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover {
+            color: var(--accent-3);
+        }
+
+        /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, #E50914 0%, #8A2BE2 50%, #00C6FF 100%);
-            padding: 80px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 5%;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border-radius: 30px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--accent-2), var(--accent-1));
+            color: white;
+            box-shadow: 0 10px 20px rgba(67, 24, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(67, 24, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 60px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .stat-card {
+            padding: 30px;
             text-align: center;
         }
-        .hero h1 {
-            font-size: 3em;
-            color: white;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+
+        .stat-card h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--accent-3), var(--accent-1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .hero .tagline {
-            font-size: 1.3em;
-            color: rgba(255,255,255,0.9);
-            max-width: 700px;
-            margin: 0 auto 30px;
+
+        .stat-card p {
+            margin: 10px 0 0;
+            font-size: 1rem;
+            color: var(--text-muted);
         }
-        .hero .badge-row {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
+
+        /* Features */
+        .section {
+            padding: 100px 5%;
         }
-        .badge {
-            background: rgba(0,0,0,0.3);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            color: white;
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
         }
-        .container {
-            max-width: 1100px;
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 20px;
         }
-        h2 {
-            font-size: 1.8em;
+
+        .feature-card {
+            padding: 40px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
             margin-bottom: 20px;
-            color: #00C6FF;
         }
-        .playlist-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
+
+        /* Architecture */
+        .arch-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px;
+            text-align: center;
         }
-        .card {
-            background: #141420;
-            border: 1px solid #2a2a3e;
-            border-radius: 12px;
-            padding: 30px;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-3px);
-            border-color: #E50914;
-        }
-        .card h3 {
-            font-size: 1.4em;
-            margin-bottom: 10px;
-        }
-        .card .icon { font-size: 2em; margin-bottom: 10px; }
-        .card p { color: #aaa; margin-bottom: 20px; line-height: 1.5; }
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: opacity 0.2s;
-        }
-        .btn:hover { opacity: 0.85; }
-        .btn-primary {
-            background: #E50914;
-            color: white;
-        }
-        .btn-success {
-            background: #00C853;
-            color: white;
-        }
-        .btn-secondary {
-            background: #2a2a3e;
-            color: #e0e0e0;
-        }
-        .copy-box {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .copy-box input {
-            flex: 1;
-            background: #0a0a0f;
-            border: 1px solid #2a2a3e;
-            color: #e0e0e0;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 0.85em;
-        }
-        .copy-box button {
-            background: #E50914;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        .feature {
+        
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            text-align: left;
             padding: 20px;
-            background: #141420;
-            border-radius: 10px;
-            border-left: 3px solid #E50914;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.5);
+            margin-top: 20px;
+            color: #a9b7c6;
         }
-        .feature h4 { color: #00C6FF; margin-bottom: 8px; }
-        .feature p { color: #aaa; font-size: 0.95em; line-height: 1.5; }
-        .section { margin-bottom: 50px; }
-        .how-to-ol {
-            counter-reset: step;
-            list-style: none;
-            padding: 0;
+
+        /* Footer */
+        footer {
+            padding: 50px 5%;
+            text-align: center;
+            border-top: 1px solid var(--glass-border);
+            margin-top: 50px;
         }
-        .how-to-ol li {
-            counter-increment: step;
-            padding: 15px 20px 15px 60px;
-            position: relative;
-            background: #141420;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        .how-to-ol li::before {
-            content: counter(step);
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #E50914;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+
+        /* Map */
+        .map-placeholder {
+            width: 100%;
+            height: 400px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--text-muted);
         }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 30px 0;
-        }
-        .stat {
-            text-align: center;
-            padding: 20px;
-            background: #141420;
-            border-radius: 10px;
-        }
-        .stat .number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #E50914;
-        }
-        .stat .label {
-            color: #aaa;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        footer {
-            text-align: center;
-            padding: 30px;
-            border-top: 1px solid #2a2a3e;
-            color: #666;
-            font-size: 0.9em;
-        }
-        footer a { color: #00C6FF; }
-        .disclaimer {
-            background: #1a1000;
-            border: 1px solid #3e3000;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            font-size: 0.9em;
-            color: #ccaa44;
-        }
+
     </style>
 </head>
 <body>
 
-<div class="hero">
-    <h1>📡 ALL-IN-One IPTV</h1>
-    <p class="tagline">The ultimate free, auto-updated IPTV playlist aggregator. 60+ sources combined, deduplicated, and verified daily.</p>
-    <div class="badge-row">
-        <span class="badge">🔄 Auto-Updated</span>
-        <span class="badge">✅ Link Verified</span>
-        <span class="badge">🌍 Grouped by Country</span>
-        <span class="badge">🔓 100% Free</span>
-        <span class="badge">📱 Any Player</span>
-    </div>
-</div>
-
-<div class="container">
-
-    <!-- Stats -->
-    <div class="stats">
-        <div class="stat">
-            <div class="number">60+</div>
-            <div class="label">Playlist Sources</div>
-        </div>
-        <div class="stat">
-            <div class="number">50K+</div>
-            <div class="label">Channels</div>
-        </div>
-        <div class="stat">
-            <div class="number">15+</div>
-            <div class="label">Countries</div>
-        </div>
-        <div class="stat">
-            <div class="number">Daily</div>
-            <div class="label">Auto-Updated</div>
-        </div>
+    <div class="bg-animated">
+        <div class="ambient-light light-1"></div>
+        <div class="ambient-light light-2"></div>
     </div>
 
-    <!-- Playlists -->
-    <div class="section">
-        <h2>📥 Download Playlists</h2>
-        <div class="playlist-cards">
-            <div class="card">
-                <div class="icon">🌍</div>
-                <h3>Combined by Country</h3>
-                <p>Complete playlist with ALL channels grouped by country. Includes every collected stream.</p>
-                <div class="copy-box">
-                    <input type="text" value="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/combined_by_country.m3u" id="url1" readonly>
-                    <button onclick="copyUrl('url1')">Copy URL</button>
-                </div>
-                <br>
-                <a class="btn btn-primary" href="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/combined_by_country.m3u">⬇ Download .m3u</a>
+    <nav id="navbar">
+        <div class="logo">ALL-IN-ONE IPTV</div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#download">Download</a>
+            <a href="/ALL-IN-One-IPTV/docs/">Docs</a>
+            <a href="/ALL-IN-One-IPTV/player/web/">Web Player</a>
+            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV" target="_blank">GitHub</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Next-Gen <br><span style="background: linear-gradient(to right, #4318ff, #ff2a5f); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">IPTV Experience</span></h1>
+        <p>A completely open-source, auto-updating, and stunningly beautiful IPTV ecosystem. Thousands of channels, perfectly organized.</p>
+        
+        <div class="hero-buttons">
+            <a href="/ALL-IN-One-IPTV/player/web/" class="btn btn-primary">
+                Launch Web Player
+            </a>
+            <a href="#download" class="btn btn-secondary">
+                Download M3U
+            </a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card glass">
+                <h3 id="stat-channels">12,500+</h3>
+                <p>Live Channels</p>
             </div>
-            <div class="card">
-                <div class="icon">✅</div>
-                <h3>Verified Alive</h3>
-                <p>Only channels with verified working links. Zero dead URLs. Updated daily via health checks.</p>
-                <div class="copy-box">
-                    <input type="text" value="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/checked_combined_by_country.m3u" id="url2" readonly>
-                    <button onclick="copyUrl('url2')">Copy URL</button>
-                </div>
-                <br>
-                <a class="btn btn-success" href="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/checked_combined_by_country.m3u">⬇ Download .m3u</a>
+            <div class="stat-card glass">
+                <h3 id="stat-countries">195</h3>
+                <p>Countries</p>
+            </div>
+            <div class="stat-card glass">
+                <h3 id="stat-uptime">99.9%</h3>
+                <p>Uptime</p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- How to Use -->
-    <div class="section">
-        <h2>📺 How to Use</h2>
-        <ol class="how-to-ol">
-            <li><strong>Copy the playlist URL</strong> — Click "Copy URL" on the playlist you want</li>
-            <li><strong>Open your IPTV player</strong> — TiviMate, IPTV Smarters, VLC, Kodi, etc.</li>
-            <li><strong>Paste the URL</strong> — Add it as an M3U playlist source</li>
-            <li><strong>Enjoy!</strong> — Browse channels grouped by country</li>
-        </ol>
-    </div>
-
-    <!-- Features -->
-    <div class="section">
-        <h2>🚀 Features</h2>
-        <div class="features">
-            <div class="feature">
-                <h4>🔄 Auto-Updated Daily</h4>
-                <p>GitHub Actions fetches and combines all playlists every day. Always fresh.</p>
+    <section id="features" class="section">
+        <h2 class="section-title">Why Choose Us?</h2>
+        <div class="features-grid">
+            <div class="feature-card glass">
+                <div class="feature-icon">🚀</div>
+                <h3>Auto-Updating</h3>
+                <p>Playlists are automatically validated and updated daily using GitHub Actions. No more dead links.</p>
             </div>
-            <div class="feature">
-                <h4>✅ Link Verification</h4>
-                <p>Parallel health checks ensure the "Verified" playlist has zero dead links.</p>
+            <div class="feature-card glass">
+                <div class="feature-icon">📺</div>
+                <h3>Modern Web Player</h3>
+                <p>A Netflix-style premium web player with HLS.js, EPG support, and Picture-in-Picture.</p>
             </div>
-            <div class="feature">
-                <h4>🌍 Country Grouping</h4>
-                <p>Channels auto-grouped by country for easy browsing.</p>
-            </div>
-            <div class="feature">
-                <h4>🔗 Smart Deduplication</h4>
-                <p>Same channel from multiple sources? Folded into one entry with fallback URLs.</p>
-            </div>
-            <div class="feature">
-                <h4>🍪 Cookie Preservation</h4>
-                <p>Channels with cookies/tokens are never removed during deduplication.</p>
-            </div>
-            <div class="feature">
-                <h4>🔒 Encrypted Input</h4>
-                <p>Add your private playlists using AES-256 encryption via Google Colab.</p>
+            <div class="feature-card glass">
+                <div class="feature-icon">🔒</div>
+                <h3>Free & Open Source</h3>
+                <p>100% community driven. No hidden fees, no trackers, completely transparent.</p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Supported Players -->
-    <div class="section">
-        <h2>📱 Supported Players</h2>
-        <p style="color: #aaa; margin-bottom: 15px;">These M3U playlists work with ANY standard IPTV player:</p>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-            <span class="badge" style="background: #141420; color: #e0e0e0;">TiviMate</span>
-            <span class="badge" style="background: #141420; color: #e0e0e0;">IPTV Smarters</span>
-            <span class="badge" style="background: #141420; color: #e0e0e0;">VLC Media Player</span>
-            <span class="badge" style="background: #141420; color: #e0e0e0;">Kodi</span>
-            <span class="badge" style="background: #141420; color: #e0e0e0;">GSE Smart IPTV</span>
-            <span class="badge" style="background: #141420; color: #e0e0e0;">OTT Navigator</span>
-            <span class="badge" style="background: #141420; color: #e0e0e0;">Perfect Player</span>
-            <span class="badge" style="background: #141420; color: #e0e0e0;">MX Player</span>
-            <span class="badge" style="background: #141420; color: #e0e0e0;">Televizo</span>
-            <span class="badge" style="background: #141420; color: #e0e0e0;">MyIPTV Player</span>
+    <section class="section" id="download">
+        <h2 class="section-title">Get the Playlist</h2>
+        <div class="arch-container glass">
+            <p>Use this URL in your favorite IPTV player (VLC, TiviMate, etc.):</p>
+            <div class="code-block">
+                https://shoumikbalasomu.github.io/ALL-IN-One-IPTV/playlist.m3u
+            </div>
+            <br>
+            <a href="#" class="btn btn-primary">Download .m3u File</a>
         </div>
-    </div>
+    </section>
 
-    <!-- Ecosystem -->
-    <div class="section">
-        <h2>🏗️ Full Ecosystem</h2>
-        <div class="playlist-cards">
-            <div class="card">
-                <div class="icon">📱</div>
-                <h3>Flutter Player</h3>
-                <p>Cross-platform player with Netflix-like VOD and OTT-like Live TV. Supports Android, Windows, Linux.</p>
-                <a class="btn btn-secondary" href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV">View on GitHub →</a>
-            </div>
-            <div class="card">
-                <div class="icon">🛡️</div>
-                <h3>Proxy Optimizer</h3>
-                <p>Android background service that intercepts dead streams and routes to working fallbacks instantly.</p>
-                <a class="btn btn-secondary" href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV">View on GitHub →</a>
-            </div>
-            <div class="card">
-                <div class="icon">🌐</div>
-                <h3>Web Player</h3>
-                <p>Browser-based player with HLS.js streaming. No installation needed.</p>
-                <a class="btn btn-secondary" href="https://ShoumikBalaSomu.github.io/ALL-IN-One-IPTV">Launch Web Player →</a>
-            </div>
-        </div>
-    </div>
+    <footer>
+        <p>&copy; 2026 ALL-IN-ONE IPTV. Created by ShoumikBalaSomu.</p>
+    </footer>
 
-    <!-- Disclaimer -->
-    <div class="disclaimer">
-        <strong>⚠️ Legal Disclaimer:</strong> This project does NOT host, store, or distribute any IPTV streams.
-        We only aggregate publicly available M3U playlist URLs from open-source repositories.
-        All content belongs to their respective owners. This tool is for educational and research purposes only.
-        <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/blob/main/DISCLAIMER.md" style="color: #ffcc00;">Read Full Disclaimer →</a>
-    </div>
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
 
-</div>
+        // Simple number counter animation
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString() + "+";
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
 
-<footer>
-    <p>Made with ❤️ by <a href="https://github.com/ShoumikBalaSomu">ShoumikBalaSomu</a></p>
-    <p style="margin-top: 8px;">
-        <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV">GitHub</a> &middot;
-        <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/blob/main/CREDITS.md">Credits</a> &middot;
-        <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/blob/main/DISCLAIMER.md">Disclaimer</a> &middot;
-        <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/blob/main/CONTRIBUTING.md">Contribute</a>
-    </p>
-</footer>
-
-<script>
-    function copyUrl(id) {
-        const input = document.getElementById(id);
-        input.select();
-        document.execCommand('copy');
-        const btn = input.nextElementSibling;
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy URL', 2000);
-    }
-</script>
-
+        // Trigger animation on load
+        window.onload = () => {
+            const channels = document.getElementById('stat-channels');
+            animateValue(channels, 0, 15000, 2000);
+        };
+    </script>
 </body>
 </html>

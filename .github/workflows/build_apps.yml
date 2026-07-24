@@ -1,140 +1,68 @@
-name: Build and Release Android Apps
+name: Build Apps
 
 on:
   push:
     tags:
-      - 'v*' # Only run when a new version tag is pushed (e.g. v1.0.0)
-  workflow_dispatch: # Allows manual trigger from GitHub UI without wasting minutes on every commit
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
-  build-flutter:
-    name: Build Flutter Unified Player (APK)
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - platform: ubuntu-latest
+            os: linux
+            build-cmd: flutter build linux
+            artifact-path: build/linux/x64/release/bundle
+            artifact-name: linux-app
+          - platform: ubuntu-latest
+            os: android
+            build-cmd: flutter build apk
+            artifact-path: build/app/outputs/flutter-apk/app-release.apk
+            artifact-name: android-app
+          - platform: windows-latest
+            os: windows
+            build-cmd: flutter build windows
+            artifact-path: build/windows/x64/runner/Release
+            artifact-name: windows-app
+    runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-          cache: 'gradle'
-          
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-          
-      - name: Build Flutter APK
-        working-directory: ./apps/app_player
-        run: |
-          flutter create --platforms=android .
-          flutter pub get
-          flutter pub run build_runner build --delete-conflicting-outputs
-          sed -i 's/android {/android {\n    namespace "dev.isar.isar_flutter_libs"/g' $HOME/.pub-cache/hosted/pub.dev/isar_flutter_libs-3.1.0+1/android/build.gradle || true
-          sed -i 's/compileSdkVersion 30/compileSdkVersion 34/g' $HOME/.pub-cache/hosted/pub.dev/isar_flutter_libs-3.1.0+1/android/build.gradle || true
-          flutter build apk --release --split-per-abi
-          
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app_player_apk
-          path: apps/app_player/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-
-  build-compose:
-    name: Build Proxy Optimizer (APK)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-          cache: 'gradle'
-          
-      - name: Make gradlew executable
-        working-directory: ./apps/app_proxy
-        run: chmod +x gradlew
-        
-      - name: Build Compose APK
-        working-directory: ./apps/app_proxy
-        run: ./gradlew assembleRelease
-        
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app_proxy_apk
-          path: apps/app_proxy/app/build/outputs/apk/release/app-release-unsigned.apk
-
-  build-windows:
-    name: Build Windows Player (EXE)
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          cache: true
           
-      - name: Enable Windows Desktop
-        run: flutter config --enable-windows-desktop
-        
-      - name: Build Windows Player
-        working-directory: ./apps/app_player
+      - name: Install dependencies
+        if: matrix.os == 'linux'
         run: |
-          flutter create --platforms=windows .
-          flutter pub get
-          flutter pub run build_runner build --delete-conflicting-outputs
-          flutter build windows --release
+          sudo apt-get update -y
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
           
-      - name: Zip Windows Build
-        working-directory: ./apps/app_player/build/windows/x64/runner/Release
-        run: Compress-Archive -Path * -DestinationPath ../../../../../NEXUS_Player_Windows.zip
+      - name: Build App
+        run: ${{ matrix.build-cmd }}
         
-      - name: Upload Windows Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-player-artifact
-          path: apps/app_player/NEXUS_Player_Windows.zip
-
-  create-release:
-    name: Create GitHub Release
-    needs: [build-flutter, build-compose, build-windows]
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-path }}
+          
+  release:
+    needs: build
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - name: Download all artifacts
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: apks
-          
-      - name: Rename APKs for Release
-        run: |
-          mv apks/app_player_apk/*.apk ./NEXUS_Player_v${{ github.ref_name || 'latest' }}.apk
-          mv apks/app_proxy_apk/*.apk ./NEXUS_Proxy_v${{ github.ref_name || 'latest' }}.apk
-          mv apks/windows-player-artifact/*.zip ./NEXUS_Player_Windows_v${{ github.ref_name || 'latest' }}.zip
+          path: artifacts
           
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: NEXUS Ecosystem Release ${{ github.ref_name || 'Latest' }}
-          tag_name: ${{ github.ref_name || 'v1.0.0' }}
-          files: |
-            ./NEXUS_Player_*.apk
-            ./NEXUS_Proxy_*.apk
-            ./NEXUS_Player_Windows_*.zip
-          body: |
-            ## 🚀 Automated Multi-Platform Release
-            Download and install the latest applications for the ALL-IN-One-IPTV ecosystem directly to your device!
-            
-            * **NEXUS_Player.apk**: The Flutter Unified Media Player (Android VOD & Live TV)
-            * **NEXUS_Proxy.apk**: The Jetpack Compose Background Optimizer (Android)
-            * **NEXUS_Player_Windows.zip**: The Windows Desktop Native Application
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: artifacts/**/*

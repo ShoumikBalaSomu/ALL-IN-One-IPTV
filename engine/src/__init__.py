@@ -1,8 +1,8 @@
 """
-ALL-IN-One-IPTV Engine Package
+ALL-IN-ONE IPTV Engine
+
+A modern, async-first IPTV playlist aggregation, validation, and export engine.
 """
 
-from .main import run_pipeline, main
-
-__version__ = "1.0.0"
-__all__ = ["run_pipeline", "main"]
+__version__ = "2.0.0"
+__author__ = "ShoumikBalaSomu"

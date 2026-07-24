@@ -1,50 +1,44 @@
 """
-Quality Classifier Engine.
-Analyzes stream metadata and channel titles to classify resolution (4K, 1080p/FHD, 720p/HD, SD, 60FPS).
+Quality Classifier — Auto-classify stream resolution & framerate.
 """
 
 import re
+from typing import Optional, Dict, Any
+
+
+_QUALITY_PATTERNS = [
+    (re.compile(r"\b(4K|UHD|2160p?)\b", re.IGNORECASE), "4K"),
+    (re.compile(r"\b(FHD|1080p?)\b", re.IGNORECASE), "FHD"),
+    (re.compile(r"\b(HD|720p?)\b", re.IGNORECASE), "HD"),
+    (re.compile(r"\b(SD|480p?|360p?)\b", re.IGNORECASE), "SD"),
+]
+
 
 class StreamQualityClassifier:
-    """Classifies stream resolution and frame rate."""
+    """Classifies resolution and framerate of stream channels."""
 
-    QUALITY_PATTERNS = {
-        '4K': re.compile(r'\b(4k|uhd|2160p|ultrahd)\b', re.IGNORECASE),
-        'FHD': re.compile(r'\b(fhd|1080p|full\s*hd)\b', re.IGNORECASE),
-        'HD': re.compile(r'\b(hd|720p)\b', re.IGNORECASE),
-        'SD': re.compile(r'\b(sd|480p|360p|hq)\b', re.IGNORECASE),
-        '60FPS': re.compile(r'\b(60fps|60\s*fps|50fps)\b', re.IGNORECASE)
-    }
+    def classify_channel(self, channel: Dict[str, Any]) -> Dict[str, Any]:
+        name = channel.get("name", "")
+        quality = detect_quality(name) or "SD"
+        is_60fps = "60fps" in name.lower() or "60" in name.lower()
 
-    def classify_channel(self, channel: dict) -> dict:
-        """Add resolution and framerate tags to channel metadata."""
-        title = channel.get('name', '')
-        extinf = channel.get('extinf', '')
-        combined_text = f"{title} {extinf}"
+        res = dict(channel)
+        res["quality"] = quality
+        res["is_60fps"] = is_60fps
+        return res
 
-        detected_quality = "SD" # Default
-        for q_name, pattern in self.QUALITY_PATTERNS.items():
-            if q_name == '60FPS':
-                continue
-            if pattern.search(combined_text):
-                detected_quality = q_name
-                break
 
-        is_60fps = bool(self.QUALITY_PATTERNS['60FPS'].search(combined_text))
+def detect_quality(name: str) -> Optional[str]:
+    for pattern, label in _QUALITY_PATTERNS:
+        if pattern.search(name):
+            return label
+    return None
 
-        # Copy channel dict and add quality metadata
-        enhanced = dict(channel)
-        enhanced['quality'] = detected_quality
-        enhanced['is_60fps'] = is_60fps
 
-        # Append quality badge to tvg-name if missing
-        if f"[{detected_quality}]" not in title and detected_quality != "SD":
-            enhanced['display_name'] = f"{title} [{detected_quality}]"
-        else:
-            enhanced['display_name'] = title
-
-        return enhanced
-
-    def batch_classify(self, channels: list[dict]) -> list[dict]:
-        """Classify a collection of channels."""
-        return [self.classify_channel(ch) for ch in channels]
+def classify_quality(name: str, existing_group: str = "") -> str:
+    quality = detect_quality(name)
+    if not existing_group:
+        return quality or "General"
+    if quality and quality.upper() not in existing_group.upper():
+        return f"{existing_group} [{quality}]"
+    return existing_group

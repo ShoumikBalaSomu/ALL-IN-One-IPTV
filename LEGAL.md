@@ -1,25 +1,24 @@
-# Legal Disclaimer & DMCA Notice
+# 🏛️ Legal Information
 
-This document serves as a strict legal disclaimer and outlines the operational nature of the **ALL-IN-One-IPTV** repository. By accessing or using any code, scripts, or output from this repository, you acknowledge and agree to the following terms:
+## DMCA Policy
 
-## 1. No Ownership or Hosting
-**We do not own, host, store, broadcast, or transmit any of the media files, video streams, or copyrighted content referenced in this repository.**
+**ALL-IN-ONE IPTV** is an open-source project designed to aggregate and validate publicly available IPTV streams. We respect the intellectual property rights of others and expect our users to do the same.
 
-This repository and its maintainers do not operate any streaming servers, nor do we possess any infrastructure capable of hosting video content. 
+Because we **do not host any media files**, we cannot take down the actual video content. However, we are fully willing to remove links to copyrighted material from our automated indexes.
 
-## 2. Public Aggregation 
-This project is strictly a technological tool—an automated aggregator and search engine. The scripts contained herein automatically crawl the public internet and GitHub to compile a list of freely accessible, publicly available text URLs (M3U links). 
+### Submitting a Takedown Request
+If you are a copyright owner or an agent thereof, and you believe that any link aggregated by our project infringes upon your copyrights, you may submit a notification pursuant to the Digital Millennium Copyright Act ("DMCA").
 
-The generated playlist files (e.g., `checked_combined_by_country.m3u`) are simply text files containing hyperlinks that point to third-party servers operated by independent entities over which we have absolutely no control.
+Please provide the following information to our repository maintainer via an official GitHub Issue or directly via email (if provided in the maintainer's profile):
 
-## 3. DMCA & Copyright Takedown Requests
-Because this repository does not host any copyrighted media, **submitting a DMCA takedown request to GitHub or the maintainers of this repository is ineffective.** 
+1. A physical or electronic signature of a person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.
+2. Identification of the copyrighted work claimed to have been infringed.
+3. Identification of the specific link(s) (e.g., the exact M3U8 URL) that is claimed to be infringing and that is to be removed.
+4. Information reasonably sufficient to permit us to contact you, such as an address, telephone number, and email address.
+5. A statement that you have a good faith belief that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law.
+6. A statement that the information in the notification is accurate, and under penalty of perjury, that you are authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.
 
-Removing a hyperlink from a text file in this repository does not remove the actual copyrighted media from the internet. The media will continue to be broadcasted by the third-party host.
+Upon receipt of a valid request, the specified URLs will be blacklisted in our scraping engine to prevent them from appearing in future playlist generations.
 
-If you are a copyright owner and wish to have your content removed from the internet, **you must direct your DMCA takedown notices to the actual web hosting provider** that is physically storing and broadcasting the stream. You can identify the hosting provider by performing a WHOIS lookup or tracing the IP address of the stream URL found in the playlist.
-
-## 4. "As Is" Operation & Liability
-The scripts, applications, and compiled playlists are provided purely for educational, research, and personal use. The maintainers of this repository accept zero liability for how users choose to utilize the generated links or the provided software. 
-
-We do not guarantee the stability, legality, or safety of the third-party streams linked by the aggregator. Users assume all responsibility and risk when connecting to external servers.
+## Terms of Service
+This software is for educational and personal use only. Commercial use of the aggregated lists may violate the terms of service of the original stream providers.

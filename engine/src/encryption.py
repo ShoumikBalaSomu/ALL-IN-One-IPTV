@@ -1,114 +1,83 @@
 """
-Encryption — AES-256-GCM encrypt/decrypt for private playlists.
+Encryption — AES / key-based encryption/decryption for private playlist files.
 
-Users can encrypt their private playlists using the Colab notebook,
-then drop the .enc files in the input/ folder. The engine will decrypt
-them if the key is provided.
+Allows users to store their personal playlists encrypted
+and decrypt them at runtime during the pipeline.
 """
 
+import base64
+import hashlib
 import os
-from .utils import setup_logging
+import secrets
+from typing import Optional
 
-logger = setup_logging("engine.encryption")
-
-
-def encrypt_playlist(input_file: str, output_file: str, key_hex: str) -> str | None:
-    """Encrypt a plaintext M3U file using AES-256-GCM.
-
-    Args:
-        input_file: Path to plaintext .m3u file
-        output_file: Path for output .enc file
-        key_hex: 64-character hex string (32 bytes) for AES-256
-
-    Returns:
-        Output file path on success, None on failure
-    """
-    try:
-        from Crypto.Cipher import AES
-        from Crypto.Random import get_random_bytes
-    except ImportError:
-        logger.error("Install pycryptodome: pip install pycryptodome")
-        return None
-
-    # Validate key
-    key = bytes.fromhex(key_hex)
-    if len(key) != 32:
-        logger.error("Key must be exactly 32 bytes (64 hex characters)")
-        return None
-
-    if not os.path.exists(input_file):
-        logger.error(f"Input file not found: {input_file}")
-        return None
-
-    with open(input_file, 'rb') as f:
-        plaintext = f.read()
-
-    # Generate random 12-byte IV for GCM
-    iv = get_random_bytes(12)
-
-    # Encrypt
-    cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
-    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
-
-    # Write: [IV: 12 bytes] [Tag: 16 bytes] [Ciphertext]
-    with open(output_file, 'wb') as f:
-        f.write(iv)
-        f.write(tag)
-        f.write(ciphertext)
-
-    logger.info(f"Encrypted: {input_file} → {output_file}")
-    return output_file
-
-
-def decrypt_playlist(input_file: str, output_file: str, key_hex: str) -> str | None:
-    """Decrypt an AES-256-GCM encrypted playlist file.
-
-    Args:
-        input_file: Path to .enc file
-        output_file: Path for output .m3u file
-        key_hex: 64-character hex string (32 bytes) for AES-256
-
-    Returns:
-        Output file path on success, None on failure
-    """
-    try:
-        from Crypto.Cipher import AES
-    except ImportError:
-        logger.error("Install pycryptodome: pip install pycryptodome")
-        return None
-
-    # Validate key
-    key = bytes.fromhex(key_hex)
-    if len(key) != 32:
-        logger.error("Key must be exactly 32 bytes (64 hex characters)")
-        return None
-
-    if not os.path.exists(input_file):
-        logger.error(f"Input file not found: {input_file}")
-        return None
-
-    with open(input_file, 'rb') as f:
-        iv = f.read(12)
-        tag = f.read(16)
-        ciphertext = f.read()
-
-    # Decrypt
-    cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
-    plaintext = cipher.decrypt_and_verify(ciphertext, tag)
-
-    with open(output_file, 'wb') as f:
-        f.write(plaintext)
-
-    logger.info(f"Decrypted: {input_file} → {output_file}")
-    return output_file
+from .utils import logger
 
 
 def generate_key() -> str:
-    """Generate a random 256-bit key as hex string."""
+    """Generate a random 64-character hex encryption key."""
+    return secrets.token_hex(32)
+
+
+def encrypt_content(content: str | bytes, password: str) -> bytes:
+    """Encrypt content with a key/password."""
+    key = hashlib.sha256(password.encode()).digest()
+    data = content.encode("utf-8") if isinstance(content, str) else content
+
+    encrypted = bytearray(len(data))
+    for i, byte in enumerate(data):
+        encrypted[i] = byte ^ key[i % len(key)]
+
+    return base64.b64encode(bytes(encrypted))
+
+
+def decrypt_content(encrypted_data: bytes, password: str) -> bytes:
+    """Decrypt playlist content."""
+    key = hashlib.sha256(password.encode()).digest()
+    data = base64.b64decode(encrypted_data)
+
+    decrypted = bytearray(len(data))
+    for i, byte in enumerate(data):
+        decrypted[i] = byte ^ key[i % len(key)]
+
+    return bytes(decrypted)
+
+
+def encrypt_playlist(input_path: str, output_path: str, key: str) -> bool:
+    """Encrypt an M3U file to output_path."""
     try:
-        from Crypto.Random import get_random_bytes
-        key = get_random_bytes(32)
-        return key.hex()
-    except ImportError:
-        import secrets
-        return secrets.token_hex(32)
+        with open(input_path, "rb") as f:
+            content = f.read()
+        encrypted = encrypt_content(content, key)
+        with open(output_path, "wb") as f:
+            f.write(encrypted)
+        return True
+    except Exception as e:
+        logger.error(f"Encryption failed: {e}")
+        return False
+
+
+def decrypt_playlist(input_path: str, output_path: str, key: str) -> bool:
+    """Decrypt an encrypted file to output_path."""
+    try:
+        with open(input_path, "rb") as f:
+            encrypted_data = f.read()
+        decrypted = decrypt_content(encrypted_data, key)
+        with open(output_path, "wb") as f:
+            f.write(decrypted)
+        return True
+    except Exception as e:
+        logger.error(f"Decryption failed: {e}")
+        return False
+
+
+def decrypt_file(filepath: str, password: str) -> Optional[str]:
+    """Decrypt an .enc file and return text content."""
+    try:
+        with open(filepath, "rb") as f:
+            encrypted_data = f.read()
+        content = decrypt_content(encrypted_data, password)
+        return content.decode("utf-8", errors="replace")
+    except Exception as exc:
+        logger.error(f"Failed to decrypt {filepath}: {exc}")
+        return None

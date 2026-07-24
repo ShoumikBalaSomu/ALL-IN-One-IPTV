@@ -1,12 +1,18 @@
-#!/bin/bash
-# Run this script using the GitHub CLI to instantly update your repository metadata.
+#!/usr/bin/env bash
+set -eo pipefail
 
-gh repo edit ShoumikBalaSomu/ALL-IN-One-IPTV \
-  --description "The ultimate automated IPTV ecosystem. Multi-View Player, LAN Mesh Relay, and auto-healing .m3u lists." \
-  --homepage "https://ShoumikBalaSomu.github.io/ALL-IN-One-IPTV" \
-  --add-topic "iptv" \
-  --add-topic "m3u" \
-  --add-topic "flutter" \
-  --add-topic "auto-update" \
-  --add-topic "android" \
-  --add-topic "p2p-mesh"
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+echo -e "${GREEN}Setting up GitHub Actions...${NC}"
+
+# Ensure we have git
+if ! command -v git &> /dev/null; then
+    echo "git could not be found. Please install git."
+    exit 1
+fi
+
+# Make scripts executable
+chmod +x scripts/*.sh build_local.sh gh_setup.sh
+
+echo -e "${GREEN}GitHub setup complete! Workflows are ready to be triggered.${NC}"

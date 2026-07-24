@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Player | ALL-IN-ONE IPTV</title>
+    <link rel="stylesheet" href="player.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="player-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Channels</h2>
+                <input type="text" id="search" placeholder="Search channels..." class="search-input">
+            </div>
+            <div class="channel-list" id="channelList">
+                <!-- Populated by JS -->
+            </div>
+        </aside>
+
+        <!-- Main Player Area -->
+        <main class="main-content">
+            <div class="video-wrapper">
+                <video id="video" class="video-player" controls autoplay></video>
+                <div class="channel-info-overlay" id="channelInfo">
+                    <h1 id="currentChannelName">Select a channel</h1>
+                    <p id="currentCategory">Category</p>
+                </div>
+            </div>
+            
+            <div class="controls-bar">
+                <button id="btnFav" class="btn">❤️ Add to Favorites</button>
+                <button id="btnPip" class="btn">📺 Picture in Picture</button>
+                <button id="btnFull" class="btn">⛶ Fullscreen</button>
+            </div>
+        </main>
+    </div>
+    <script src="player.js"></script>
+</body>
+</html>

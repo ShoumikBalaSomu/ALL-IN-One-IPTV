@@ -1,146 +1,85 @@
 """
-Link Verifier — Check if stream URLs are alive using parallel HTTP requests.
+Verifier — Concurrent stream health checker.
 
-Uses host-level checking: if one URL from a host responds, all URLs from
-that host are considered alive. This dramatically speeds up verification
-for playlists with thousands of channels sharing the same CDN.
+Pings each stream URL with an HTTP HEAD request to determine
+if it's still alive, respecting rate limits and timeouts.
 """
 
 import asyncio
+from typing import List
+
 import aiohttp
-from urllib.parse import urlparse
-from collections import defaultdict
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeRemainingColumn
 
-from .utils import setup_logging, url_to_host
-
-logger = setup_logging("engine.verifier")
+from .parser import Stream
+from .utils import logger
 
 
-class LinkVerifier:
-    """Verify stream URLs are accessible using parallel host-level checking."""
+async def check_stream(
+    session: aiohttp.ClientSession,
+    stream: Stream,
+    timeout: int = 10,
+) -> bool:
+    """Check if a single stream URL is alive via HEAD request."""
+    try:
+        async with session.head(
+            stream.url,
+            timeout=aiohttp.ClientTimeout(total=timeout),
+            ssl=False,
+            allow_redirects=True,
+        ) as resp:
+            return resp.status < 400
+    except (aiohttp.ClientError, asyncio.TimeoutError, Exception):
+        return False
 
-    def __init__(self, concurrency: int = 100, timeout: int = 5):
-        self.concurrency = concurrency
-        self.timeout = timeout
 
-    async def check_host(self, session: aiohttp.ClientSession, url: str) -> bool:
-        """Check if a single URL responds with a successful status."""
-        try:
-            # Use HEAD request first (faster, less bandwidth)
-            async with session.head(
-                url,
-                timeout=aiohttp.ClientTimeout(total=self.timeout),
-                allow_redirects=True,
-            ) as resp:
-                if resp.status < 400:
-                    return True
+async def verify_streams(
+    streams: List[Stream],
+    workers: int = 25,
+    timeout: int = 10,
+) -> List[Stream]:
+    """
+    Verify a list of streams concurrently.
 
-            # If HEAD fails, try GET with low timeout (some servers block HEAD)
-            async with session.get(
-                url,
-                timeout=aiohttp.ClientTimeout(total=self.timeout),
-                allow_redirects=True,
-            ) as resp:
-                return resp.status < 400
+    Args:
+        streams: List of Stream objects to verify.
+        workers: Maximum concurrent verification requests.
+        timeout: Per-stream timeout in seconds.
 
-        except asyncio.TimeoutError:
-            return False
-        except Exception:
-            return False
+    Returns:
+        List of streams that responded successfully.
+    """
+    if not streams:
+        return []
 
-    async def verify(self, channels: list[dict]) -> list[dict]:
-        """Verify all channels using host-level health checking.
+    alive: List[Stream] = []
+    semaphore = asyncio.Semaphore(workers)
+    connector = aiohttp.TCPConnector(limit=workers, force_close=True)
 
-        Strategy:
-        1. Map each channel to its host
-        2. Check one representative URL per host
-        3. If host is alive, all channels from that host are alive
-        4. For channels with cookies/special headers, always include them
-        """
-        # Build host map
-        host_map: dict[str, list[dict]] = defaultdict(list)
-        standalone: list[dict] = []  # Channels with special headers — always keep
+    async with aiohttp.ClientSession(connector=connector) as session:
 
-        for ch in channels:
-            url = ch["url"]
-            if ch.get("has_cookies", False):
-                standalone.append(ch)
-                continue
+        async def bounded_check(stream: Stream) -> tuple[Stream, bool]:
+            async with semaphore:
+                result = await check_stream(session, stream, timeout)
+                return stream, result
 
-            # For folded channels, check the primary URL
-            host = url_to_host(url)
-            host_map[host].append(ch)
+        tasks = [bounded_check(s) for s in streams]
 
-        logger.info(f"Checking {len(host_map)} unique hosts...")
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[cyan]Verifying streams..."),
+            BarColumn(),
+            TextColumn("{task.completed}/{task.total}"),
+            TimeRemainingColumn(),
+        ) as progress:
+            task_id = progress.add_task("Verifying", total=len(tasks))
 
-        # Check hosts in parallel
-        alive_hosts: set[str] = set()
-        connector = aiohttp.TCPConnector(limit=self.concurrency)
-
-        async with aiohttp.ClientSession(connector=connector) as session:
-            semaphore = asyncio.Semaphore(self.concurrency)
-
-            async def check_host_with_sem(host: str, sample_url: str):
-                async with semaphore:
-                    is_alive = await self.check_host(session, sample_url)
-                    if is_alive:
-                        alive_hosts.add(host)
-                    else:
-                        logger.debug(f"Dead host: {host}")
-
-            tasks = [
-                check_host_with_sem(host, host_map[host][0]["url"])
-                for host in host_map
-            ]
-
-            # Process in batches with progress reporting
-            for i, task in enumerate(asyncio.as_completed(tasks)):
-                await task
-                if (i + 1) % 50 == 0:
-                    logger.info(f"Checked {i + 1}/{len(tasks)} hosts ({len(alive_hosts)} alive)")
-
-        # Filter channels: keep if host is alive OR channel has special headers
-        verified = []
-        for ch in channels:
-            if ch.get("has_cookies", False):
-                verified.append(ch)
-                continue
-
-            host = url_to_host(ch["url"])
-            if host in alive_hosts:
-                verified.append(ch)
-
-        logger.info(
-            f"Verification complete: {len(verified)}/{len(channels)} channels verified "
-            f"({len(alive_hosts)}/{len(host_map)} hosts alive)"
-        )
-
-        return verified
-
-    async def verify_individual(self, channels: list[dict]) -> list[dict]:
-        """Verify each URL individually (slower but more accurate).
-
-        Useful for small playlists or when you need per-URL accuracy.
-        """
-        verified = []
-        connector = aiohttp.TCPConnector(limit=self.concurrency)
-
-        async with aiohttp.ClientSession(connector=connector) as session:
-            semaphore = asyncio.Semaphore(self.concurrency)
-
-            async def check_channel(ch: dict):
-                async with semaphore:
-                    url = ch["url"]
-                    is_alive = await self.check_host(session, url)
-                    return ch, is_alive
-
-            tasks = [check_channel(ch) for ch in channels]
-            for i, task in enumerate(asyncio.as_completed(tasks)):
-                ch, is_alive = await task
+            for coro in asyncio.as_completed(tasks):
+                stream, is_alive = await coro
                 if is_alive:
-                    verified.append(ch)
-                if (i + 1) % 500 == 0:
-                    logger.info(f"Checked {i + 1}/{len(channels)} URLs")
+                    alive.append(stream)
+                progress.advance(task_id)
 
-        logger.info(f"Individual verification: {len(verified)}/{len(channels)} alive")
-        return verified
+    dead = len(streams) - len(alive)
+    logger.info(f"Verification complete: {len(alive)} alive, {dead} dead")
+    return alive

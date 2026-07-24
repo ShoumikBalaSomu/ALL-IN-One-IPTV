@@ -1,137 +1,93 @@
 """
-M3U Parser — Parse M3U/M3U8 playlist content into structured channel data.
+Smart M3U parsing with full EXTINF metadata extraction.
 """
 
 import re
+from dataclasses import dataclass
+from typing import Dict, List, Optional
+from .utils import detect_country_from_group
 
-from .utils import setup_logging, normalize_channel_name, detect_country_from_group, sanitize_text, has_special_headers
 
-logger = setup_logging("engine.parser")
+@dataclass
+class Stream:
+    url: str
+    name: str
+    tvg_id: str = ""
+    tvg_name: str = ""
+    tvg_logo: str = ""
+    group_title: str = ""
+    tvg_language: str = ""
+    tvg_country: str = ""
+    has_cookies: bool = False
+    vlc_opts: list[str] | None = None
 
 
 class M3UParser:
-    """Parse M3U playlist content into structured channel dictionaries."""
+    """Parser class for M3U playlist content."""
 
-    def parse(self, content: str, source: str = "unknown") -> list[dict]:
-        """Parse M3U content string into list of channel dicts."""
-        channels = []
-        lines = content.splitlines()
+    def parse(self, content: str) -> List[dict]:
+        """Parse M3U content and return list of channel dicts for backwards compatibility / tests."""
+        streams = parse_m3u(content)
+        result = []
+        for s in streams:
+            group = s.group_title or "Uncategorized"
+            group_detected = detect_country_from_group(group)
+            result.append({
+                "name": s.name,
+                "url": s.url,
+                "tvg_id": s.tvg_id,
+                "tvg_name": s.tvg_name,
+                "tvg_logo": s.tvg_logo,
+                "group": group_detected,
+                "has_cookies": s.has_cookies,
+            })
+        return result
 
-        current_extinf = None
-        current_vlc_opts = []
-        current_kodi_props = []
-
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-
-            if line.startswith("#EXTINF"):
-                # Save previous channel if exists
-                if current_extinf is not None:
-                    # URL will be captured on next non-comment line
-                    pass
-                current_extinf = line
-                current_vlc_opts = []
-                current_kodi_props = []
-
-            elif line.startswith("#EXTVLCOPT") or line.startswith("#EXTHTTP"):
-                current_vlc_opts.append(line)
-
-            elif line.startswith("#KODIPROP"):
-                current_kodi_props.append(line)
-
-            elif not line.startswith("#"):
-                # This is a URL line
-                if current_extinf is not None:
-                    channel = self._parse_channel(
-                        current_extinf, line, current_vlc_opts, current_kodi_props, source
-                    )
-                    if channel:
-                        channels.append(channel)
-
-                # Reset for next channel
-                current_extinf = None
-                current_vlc_opts = []
-                current_kodi_props = []
-
-        return channels
-
-    def parse_all(self, sources: list[dict]) -> list[dict]:
-        """Parse multiple playlist sources."""
+    def parse_all(self, sources: List[dict]) -> List[dict]:
+        """Parse multiple sources list of dicts {'source': url, 'content': text}."""
         all_channels = []
-        for source_data in sources:
-            content = source_data.get("content", "")
-            source = source_data.get("source", "unknown")
-            if content:
-                channels = self.parse(content, source)
-                all_channels.extend(channels)
-                logger.debug(f"Parsed {len(channels)} channels from {source}")
+        for s in sources:
+            all_channels.extend(self.parse(s.get("content", "")))
         return all_channels
 
-    def _parse_channel(
-        self, extinf: str, url: str, vlc_opts: list[str], kodi_props: list[str], source: str
-    ) -> dict | None:
-        """Parse a single channel from EXTINF + URL."""
-        # Extract channel name
-        name_match = re.search(r',(.*)$', extinf)
-        name = sanitize_text(name_match.group(1).strip()) if name_match else "Unknown"
 
-        # Extract TVG ID
-        tvg_id = self._extract(extinf, r'tvg-id="([^"]*)"')
+def parse_m3u(content: str) -> List[Stream]:
+    """Parse M3U string into Stream objects."""
+    streams: List[Stream] = []
+    lines = content.splitlines()
+    current_stream: Optional[Stream] = None
+    vlc_opts: list[str] = []
 
-        # Extract TVG Name
-        tvg_name = self._extract(extinf, r'tvg-name="([^"]*)"')
+    extinf_re = re.compile(r"#EXTINF:-1(.*),(.*)")
+    prop_re = re.compile(r'([a-zA-Z0-9_-]+)="([^"]*)"')
 
-        # Extract TVG Country (country code)
-        tvg_country = self._extract(extinf, r'tvg-country="([^"]*)"')
+    for line in lines:
+        line = line.strip()
+        if line.startswith("#EXTINF"):
+            match = extinf_re.match(line)
+            if match:
+                props_str, name = match.groups()
+                props = dict(prop_re.findall(props_str))
+                current_stream = Stream(
+                    url="",
+                    name=name.strip(),
+                    tvg_id=props.get("tvg-id", ""),
+                    tvg_name=props.get("tvg-name", ""),
+                    tvg_logo=props.get("tvg-logo", ""),
+                    group_title=props.get("group-title", ""),
+                    tvg_language=props.get("tvg-language", ""),
+                    tvg_country=props.get("tvg-country", ""),
+                )
+        elif line.startswith("#EXTVLCOPT"):
+            vlc_opts.append(line)
+        elif line and not line.startswith("#"):
+            if current_stream:
+                current_stream.url = line
+                current_stream.vlc_opts = list(vlc_opts)
+                if any("Cookie:" in opt for opt in vlc_opts):
+                    current_stream.has_cookies = True
+                streams.append(current_stream)
+                current_stream = None
+                vlc_opts = []
 
-        # Extract TVG Logo
-        tvg_logo = self._extract(extinf, r'tvg-logo="([^"]*)"')
-
-        # Extract Group Title
-        group_title = self._extract(extinf, r'group-title="([^"]*)"')
-
-        # Determine country/group
-        if tvg_country:
-            group = detect_country_from_group(tvg_country)
-        elif group_title:
-            group = detect_country_from_group(group_title)
-        else:
-            group = "Uncategorized"
-
-        # Build HTTP headers list (cookies, auth, etc.)
-        http_headers = []
-        for opt in vlc_opts:
-            # Parse #EXTVLCOPT:http-header=Cookie: xxx
-            header_match = re.search(r'http-header=(.+)', opt)
-            if header_match:
-                http_headers.append(header_match.group(1).strip())
-            else:
-                http_headers.append(opt)
-
-        return {
-            "name": name,
-            "tvg_id": tvg_id or "",
-            "tvg_name": tvg_name or "",
-            "tvg_country": tvg_country or "",
-            "tvg_logo": tvg_logo or "",
-            "group": group,
-            "group_title": group_title or "",
-            "url": url.strip(),
-            "extinf": extinf.strip(),
-            "vlc_opts": vlc_opts,
-            "kodi_props": kodi_props,
-            "http_headers": http_headers,
-            "source": source,
-            "has_cookies": has_special_headers({
-                "url": url,
-                "vlc_opts": vlc_opts,
-            }),
-        }
-
-    @staticmethod
-    def _extract(text: str, pattern: str) -> str:
-        """Extract a value from regex pattern."""
-        match = re.search(pattern, text)
-        return match.group(1).strip() if match else ""
+    return streams

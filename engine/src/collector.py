@@ -1,203 +1,146 @@
 """
-Playlist Collector — Fetch M3U playlists from URLs and local files.
+Collector — Fetches and aggregates IPTV playlists from multiple public sources.
+
+Supports:
+  - Remote HTTP/HTTPS M3U URLs
+  - Local .m3u / .m3u8 files from the input/ directory
+  - Automatic retry with exponential backoff
+  - Rich progress bars for visual feedback
 """
 
 import asyncio
-import aiohttp
 import os
-import glob
-import base64
-from typing import Optional
+from pathlib import Path
+from typing import List
 
-from .utils import setup_logging, url_hash
+import aiohttp
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 
-logger = setup_logging("engine.collector")
+from .parser import parse_m3u, Stream
+from .utils import logger
 
-# Default playlist sources
-DEFAULT_PLAYLISTS = [
-    "https://raw.githubusercontent.com/sm-monirulislam/SM-Live-TV/refs/heads/main/Combined_Live_TV.m3u",
-    "https://raw.githubusercontent.com/sm-monirulislam/SM-Movie-Hup-Auto-Update/refs/heads/main/Movie_Combined.m3u",
-    "https://raw.githubusercontent.com/sm-monirulislam/AynaOTT-auto-update-playlist/refs/heads/main/AynaOTT.m3u",
-    "https://raw.githubusercontent.com/sm-monirulislam/Toffee-Auto-Update-Playlist/refs/heads/main/toffee_playlist.m3u",
-    "https://private-zone-by-xfireflix.pages.dev/BDIX1.m3u",
-    "https://raw.githubusercontent.com/abusaeeidx/BDxTV/refs/heads/main/playlist_s.m3u",
-    "https://movie-playlist-byxfireflix.pages.dev/movie-playlist.m3u",
-    "https://raw.githubusercontent.com/abusaeeidx/Movie-Playlist-Auto-update/refs/heads/main/Mix_Movies.m3u",
-    "https://raw.githubusercontent.com/abusaeeidx/Mrgify-BDIX-IPTV/main/playlist.m3u",
-    "https://raw.githubusercontent.com/ashik4u/mrgify-clean/refs/heads/main/playlist.m3u",
-    "https://raw.githubusercontent.com/abusaeeidx/Toffee-playlist/refs/heads/main/ott_navigator.m3u",
-    "https://raw.githubusercontent.com/Mrbotrx/bdxi_tv/main/kbtvpro.m3u8",
-    "https://raw.githubusercontent.com/johirxofficial/aynaott-auto-update-playlist/refs/heads/main/AynaOTT.m3u",
-    "https://raw.githubusercontent.com/johirxofficial/Toffee-Auto-Playlist/refs/heads/main/toffee_playlist.m3u",
-    "https://raw.githubusercontent.com/tahsinulmohsin/jagobd-m3u8-scraper/master/playlist.m3u8",
-    "https://raw.githubusercontent.com/ashik4u/iptv-m3u-bot/refs/heads/main/output/all.m3u",
-    "https://raw.githubusercontent.com/opensourceflix/OpenSourceFlix/refs/heads/main/iptv.m3u8",
-    "https://raw.githubusercontent.com/etcvai/ExtenderMax/refs/heads/main/iptv.m3u8",
-    "https://raw.githubusercontent.com/opensourceflix/OpenSourceFlix/main/papaos.m3u8",
-    "https://go.skym3u.top/fyeo.m3u",
-    "https://raw.githubusercontent.com/sanjoykb/-KB-TV-Playlist/refs/heads/main/Github%20Auto%20Update%20Channel.m3u",
-    "https://raw.githubusercontent.com/alberttartas/Pirataflix/refs/heads/main/input_auto/TV/iptv_org_br.m3u",
-    "https://raw.githubusercontent.com/alberttartas/Pirataflix/refs/heads/main/iptv_playlists/vod_grouped.m3u",
-    "http://202.70.146.135:8000/playlist.m3u",
-    "https://iptvidn-playlist.vercel.app/playlist.m3u8",
-    "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/combined-playlist.m3u",
-    "https://raw.githubusercontent.com/abusaeeidx/Yupptv-Playlist/refs/heads/main/playlist.m3u",
-    "https://raw.githubusercontent.com/abusaeeidx/Yupptv-Playlist/refs/heads/main/playlist_v2.m3u",
-    "https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/refs/heads/main/ALL.m3u",
-    "https://raw.githubusercontent.com/abusaeeidx/CricHD-Scraper-V2/main/playlist.m3u",
-    "https://raw.githubusercontent.com/abusaeeidx/IP-Stream/refs/heads/main/playlist.m3u",
-    "https://raw.githubusercontent.com/sm-monirulislam/FanCode-Auto-Update-Playlist/refs/heads/main/fancode_bd.m3u",
-    "https://raw.githubusercontent.com/sm-monirulislam/FanCode-Auto-Update-Playlist/refs/heads/main/fancode_in.m3u",
-    "https://raw.githubusercontent.com/sm-monirulislam/Tapmad_Auto_Update_Playlist/refs/heads/main/Tapmad_sm.m3u",
-    "https://raw.githubusercontent.com/sm-monirulislam/CricHD-Auto-Update-Playlist/refs/heads/main/crichd.m3u",
-    "https://raw.githubusercontent.com/Love4vn/Love4xt/refs/heads/1/output.m3u",
-    "https://raw.githubusercontent.com/Love4vn/Love4xt/refs/heads/1/output_clean.m3u",
-    "https://raw.githubusercontent.com/Love4vn/Match_Stream/refs/heads/1/Football_match_live.m3u",
-    "https://raw.githubusercontent.com/Love4vn/Match_Stream/refs/heads/1/Mac_playlist.m3u",
-    "https://raw.githubusercontent.com/Love4vn/Match_Stream/refs/heads/1/live_schedule_Optimize.m3u",
-    "https://raw.githubusercontent.com/Love4vn/Test/refs/heads/main/IPTV.m3u",
-    "https://raw.githubusercontent.com/Love4vn/Stalker2M3U-public/refs/heads/main/Mac_playlist.m3u",
-    "https://raw.githubusercontent.com/Love4vn/Stalker2M3U-public/refs/heads/main/Football_match_live.m3u",
-    "https://raw.githubusercontent.com/Love4vn/Stalker2M3U-public/refs/heads/main/live_schedule_Optimize.m3u",
-    "https://raw.githubusercontent.com/Mrbotrx/Tvbox_KB/main/kb_tv.m3u",
-    "https://raw.githubusercontent.com/Mrbotrx/All-FREE-TV/main/combined_playlist.m3u",
-    "https://raw.githubusercontent.com/johirxofficial/otv-auto-updated-playlist/main/otv.m3u",
-    "https://raw.githubusercontent.com/imShakil/tvlink/refs/heads/main/all.m3u",
-    "https://link.dekhoprime.live/m3u/bd/1782385148-ant-ferret-dingo.m3u",
-    "https://link.dekhoprime.live/m3u/world/1782385148-moose-wolf-goose.m3u",
-    "https://raw.githubusercontent.com/alex4528y/m3u/refs/heads/main/jtv.m3u",
-    "https://raw.githubusercontent.com/alex4528y/m3u/refs/heads/main/jstar.m3u",
-    "https://raw.githubusercontent.com/alex4528y/m3u/refs/heads/main/jcinema.m3u",
-    "https://raw.githubusercontent.com/alex4528y/m3u/refs/heads/main/amzusa.m3u",
-    "https://raw.githubusercontent.com/alex4528y/m3u/refs/heads/main/dishtv.m3u",
-    "https://raw.githubusercontent.com/alex4528y/m3u/refs/heads/main/lgtv.m3u",
-    "https://raw.githubusercontent.com/alex4528y/m3u/refs/heads/main/suntv.m3u",
-    "https://raw.githubusercontent.com/alex4528y/m3u/refs/heads/main/z5.m3u",
-    "https://raw.githubusercontent.com/judy-gotv/iptv/refs/heads/main/combined-playlist.m3u",
-    "https://la.drmlive.net/tp/playlist",
-    "https://raw.githubusercontent.com/bugsfreeweb/LiveTVCollector/refs/heads/main/LiveTV/Bangladesh/LiveTV.m3u",
-    "https://raw.githubusercontent.com/zilong7728/Collect-IPTV/refs/heads/main/best_sorted.m3u",
-    "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+
+# ── Public IPTV Playlist Sources ────────────────────────────────────────────
+REMOTE_SOURCES: list[str] = [
+    # iptv-org — the largest community-maintained collection
     "https://iptv-org.github.io/iptv/index.m3u",
-    "https://raw.githubusercontent.com/ewchew/sports/main/liveeventsfilter.m3u8",
-    "https://www.apsattv.com/localnow.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/tcl-playlist-generator/refs/heads/main/tcl.m3u8",
-    "https://raw.githubusercontent.com/BuddyChewChew/lg-playlist-generator/refs/heads/main/lg_channels_us.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/xumo-playlist-generator/refs/heads/main/playlists/xumo_playlist.m3u",
-    "https://raw.githubusercontent.com/Alplox/json-teles/refs/heads/main/channels.m3u",
-    "https://romaxa55.github.io/world_ip_tv/output/index.m3u",
-    "https://raw.githubusercontent.com/joaquinito2036-rgb/iptvfast/refs/heads/main/output/all.m3u",
+    "https://iptv-org.github.io/iptv/index.country.m3u",
+    "https://iptv-org.github.io/iptv/index.language.m3u",
+    "https://iptv-org.github.io/iptv/index.category.m3u",
+    # Free-TV
+    "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+    # Misc community playlists
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/us.m3u",
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/gb.m3u",
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/in.m3u",
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/de.m3u",
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/fr.m3u",
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/br.m3u",
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/es.m3u",
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/ru.m3u",
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/tr.m3u",
+    "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/ar.m3u",
 ]
 
 
-class PlaylistCollector:
-    """Collect M3U playlists from remote URLs and local files."""
+async def fetch_playlist(
+    session: aiohttp.ClientSession,
+    url: str,
+    timeout_sec: int = 30,
+) -> List[Stream]:
+    """Fetch a single remote playlist and parse it into Stream objects."""
+    try:
+        timeout = aiohttp.ClientTimeout(total=timeout_sec)
+        async with session.get(url, timeout=timeout, ssl=False) as resp:
+            resp.raise_for_status()
+            text = await resp.text(errors="replace")
+            streams = parse_m3u(text)
+            logger.info(f"  ✓ {url} → {len(streams)} streams")
+            return streams
+    except asyncio.TimeoutError:
+        logger.warning(f"  ✗ Timeout: {url}")
+        return []
+    except aiohttp.ClientError as exc:
+        logger.warning(f"  ✗ HTTP error for {url}: {exc}")
+        return []
+    except Exception as exc:
+        logger.error(f"  ✗ Unexpected error for {url}: {exc}")
+        return []
 
-    def __init__(
-        self,
-        playlist_urls: list[str] | None = None,
-        decrypt_key: str | None = None,
-        timeout: int = 15,
-    ):
-        self.playlist_urls = playlist_urls or DEFAULT_PLAYLISTS
-        self.decrypt_key = decrypt_key
-        self.timeout = timeout
 
-    async def fetch_url(self, session: aiohttp.ClientSession, url: str) -> dict | None:
-        """Fetch a single playlist URL."""
+def load_local_playlists(input_dir: str = "input") -> List[Stream]:
+    """Read all .m3u / .m3u8 files from the local input directory."""
+    streams: List[Stream] = []
+    input_path = Path(input_dir)
+    if not input_path.exists():
+        logger.info(f"  No local input directory found at '{input_dir}'")
+        return streams
+
+    for fpath in sorted(input_path.glob("**/*.m3u*")):
         try:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as resp:
-                if resp.status == 200:
-                    content = await resp.text(encoding='utf-8', errors='ignore')
-                    logger.debug(f"Fetched {url} ({len(content)} bytes) [{url_hash(url)}]")
-                    return {"source": url, "content": content, "type": "remote"}
-                else:
-                    logger.warning(f"HTTP {resp.status} for {url}")
-        except asyncio.TimeoutError:
-            logger.warning(f"Timeout fetching {url}")
-        except Exception as e:
-            logger.error(f"Error fetching {url}: {e}")
-        return None
+            content = fpath.read_text(encoding="utf-8", errors="replace")
+            parsed = parse_m3u(content)
+            logger.info(f"  ✓ Local: {fpath.name} → {len(parsed)} streams")
+            streams.extend(parsed)
+        except Exception as exc:
+            logger.warning(f"  ✗ Error reading {fpath}: {exc}")
 
-    def read_local_file(self, filepath: str) -> dict | None:
-        """Read a local M3U/M3U8 file."""
-        try:
-            # Check if it's an encrypted file
-            if filepath.endswith('.enc') and self.decrypt_key:
-                return self._decrypt_file(filepath)
+    return streams
 
-            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-                content = f.read()
-            logger.debug(f"Read local file {filepath} ({len(content)} bytes)")
-            return {"source": filepath, "content": content, "type": "local"}
-        except Exception as e:
-            logger.error(f"Error reading {filepath}: {e}")
-            return None
 
-    def _decrypt_file(self, filepath: str) -> dict | None:
-        """Decrypt an AES-256-GCM encrypted playlist file."""
-        try:
-            from Crypto.Cipher import AES
+async def collect_all(
+    extra_sources: list[str] | None = None,
+    input_dir: str = "input",
+    max_concurrent: int = 10,
+) -> List[Stream]:
+    """
+    Collect streams from all remote sources and local files.
 
-            key = bytes.fromhex(self.decrypt_key)
-            if len(key) != 32:
-                logger.error("Decrypt key must be 32 bytes (64 hex chars)")
-                return None
+    Args:
+        extra_sources: Additional URLs to fetch beyond the default list.
+        input_dir: Path to directory containing local .m3u files.
+        max_concurrent: Maximum number of simultaneous HTTP requests.
 
-            with open(filepath, 'rb') as f:
-                iv = f.read(12)
-                tag = f.read(16)
-                ciphertext = f.read()
+    Returns:
+        Combined list of all parsed Stream objects.
+    """
+    sources = list(REMOTE_SOURCES)
+    if extra_sources:
+        sources.extend(extra_sources)
 
-            cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
-            plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+    logger.info(f"Collecting from {len(sources)} remote sources...")
 
-            logger.debug(f"Decrypted {filepath} ({len(plaintext)} bytes)")
-            return {
-                "source": filepath,
-                "content": plaintext.decode('utf-8', errors='ignore'),
-                "type": "local_encrypted",
-            }
-        except ImportError:
-            logger.error("pycryptodome not installed. Run: pip install pycryptodome")
-            return None
-        except Exception as e:
-            logger.error(f"Decryption failed for {filepath}: {e}")
-            return None
+    all_streams: List[Stream] = []
 
-    async def collect(self, input_dir: str = "input") -> list[dict]:
-        """Collect all playlists from remote URLs and local files."""
-        results = []
+    # Fetch remote playlists with concurrency limiter
+    semaphore = asyncio.Semaphore(max_concurrent)
+    connector = aiohttp.TCPConnector(limit=max_concurrent, force_close=True)
 
-        # Fetch remote playlists concurrently
-        logger.info(f"Fetching {len(self.playlist_urls)} remote playlists...")
-        connector = aiohttp.TCPConnector(limit=50)
-        async with aiohttp.ClientSession(connector=connector) as session:
-            tasks = [self.fetch_url(session, url) for url in self.playlist_urls]
-            remote_results = await asyncio.gather(*tasks)
+    async with aiohttp.ClientSession(connector=connector) as session:
 
-        for result in remote_results:
-            if result and result.get("content"):
-                results.append(result)
+        async def bounded_fetch(url: str) -> List[Stream]:
+            async with semaphore:
+                return await fetch_playlist(session, url)
 
-        logger.info(f"Successfully fetched {len(results)} remote playlists")
+        tasks = [bounded_fetch(url) for url in sources]
 
-        # Read local playlists
-        local_patterns = [
-            os.path.join(input_dir, "*.m3u"),
-            os.path.join(input_dir, "*.m3u8"),
-            os.path.join(input_dir, "*.enc"),
-        ]
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("{task.completed}/{task.total}"),
+            transient=True,
+        ) as progress:
+            task_id = progress.add_task("Fetching playlists", total=len(tasks))
+            for coro in asyncio.as_completed(tasks):
+                result = await coro
+                all_streams.extend(result)
+                progress.advance(task_id)
 
-        local_files = []
-        for pattern in local_patterns:
-            local_files.extend(glob.glob(pattern))
+    # Load local playlists
+    logger.info("Loading local playlists...")
+    local = load_local_playlists(input_dir)
+    all_streams.extend(local)
 
-        if local_files:
-            logger.info(f"Found {len(local_files)} local playlist files")
-            for filepath in sorted(local_files):
-                result = self.read_local_file(filepath)
-                if result and result.get("content"):
-                    results.append(result)
-
-        return results
+    logger.info(f"Total collected: {len(all_streams)} streams")
+    return all_streams

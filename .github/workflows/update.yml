@@ -1,80 +1,35 @@
-name: Auto Update IPTV Playlists
+name: Daily Update
 
 on:
   schedule:
-    - cron: "0 */6 * * *"  # Every 6 hours
-  workflow_dispatch:       # Manual trigger
-  push:
-    paths:
-      - 'aggregator.py'
-      - 'engine/src/collector.py'
-      - 'requirements.txt'
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
-  update-playlists:
+  update:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true
-
-      - name: Set up Python
+      
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
-
+          
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
           pip install -r engine/requirements.txt
-
-      - name: Create directories
+          
+      - name: Run Engine
+        run: python -m engine.src
+        
+      - name: Commit and Push changes
         run: |
-          mkdir -p input output engine/input engine/output
-
-      - name: Run Modular Engine (with verification)
-        run: |
-          python -m engine.src.main \
-            --input input \
-            --output output \
-            --concurrency 100
-        env:
-          ENCRYPT_KEY: ${{ secrets.ENCRYPT_KEY }}
-
-      - name: Validate Output
-        run: |
-          echo "=== Output Files ==="
-          ls -lh output/
-          echo ""
-          echo "=== Channel Counts ==="
-          for f in output/*.m3u; do
-            if [ -f "$f" ]; then
-              COUNT=$(grep -c '^#EXTINF' "$f" || echo 0)
-              SIZE=$(du -h "$f" | cut -f1)
-              echo "$(basename $f): $COUNT channels ($SIZE)"
-            fi
-          done
-
-      - name: Commit and Push Changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add output/
-          git diff --staged --quiet || git commit -m "🤖 Auto-update playlists ($(date +%Y-%m-%d %H:%M UTC))"
-          git push || echo "No changes to push"
-
-      - name: Notify on Failure
-        if: failure()
-        uses: slackapi/slack-github-action@v1
-        with:
-          payload: |
-            {
-              "text": "❌ IPTV Playlist Update Failed!\nRepo: ${{ github.repository }}\nRun: ${{ github.run_id }}"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          git commit -m "chore: daily output update" || exit 0
+          git push

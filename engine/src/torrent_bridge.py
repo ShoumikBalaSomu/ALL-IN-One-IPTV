@@ -1,42 +1,36 @@
 """
-Torrent & P2P Stream Bridge Helper.
-Parses acestream://, magnet:?, and P2P infohashes into local proxy HTTP URLs for zero-buffering playback.
+Torrent & Acestream P2P link bridge.
 """
 
-from urllib.parse import parse_qs, urlparse
+import re
+from typing import Optional
+
 
 class TorrentStreamBridge:
-    """Transforms P2P / Acestream / Magnet URIs to HTTP proxy endpoints."""
+    """Bridge for parsing and transforming Acestream and Torrent magnet links to HTTP proxy URLs."""
 
-    def __init__(self, local_proxy_port: int = 8080):
+    def __init__(self, local_proxy_host: str = "127.0.0.1", local_proxy_port: int = 8080):
+        self.local_proxy_host = local_proxy_host
         self.local_proxy_port = local_proxy_port
 
     def is_p2p_url(self, url: str) -> bool:
-        """Check if URL is a P2P / Acestream / Magnet stream."""
+        """Check if URL is acestream or magnet link."""
+        if not url:
+            return False
         return url.startswith("acestream://") or url.startswith("magnet:") or ".torrent" in url
 
-    def extract_infohash(self, url: str) -> str | None:
-        """Extract 40-character hex infohash or Acestream ID."""
+    def extract_infohash(self, url: str) -> Optional[str]:
+        """Extract infohash or PID from acestream / magnet link."""
         if url.startswith("acestream://"):
             return url.replace("acestream://", "").strip()
-
-        if url.startswith("magnet:"):
-            parsed = urlparse(url)
-            params = parse_qs(parsed.query)
-            xt_list = params.get('xt', [])
-            for xt in xt_list:
-                if 'btih:' in xt:
-                    return xt.split('btih:')[-1].split('&')[0]
-
+        match = re.search(r"xt=urn:btih:([a-fA-F0-9]{40}|[a-zA-Z2-7]{32})", url)
+        if match:
+            return match.group(1)
         return None
 
     def transform_to_http_proxy(self, url: str) -> str:
-        """Transform a P2P URL into a local HTTP proxy relay URL."""
-        if not self.is_p2p_url(url):
-            return url
-
+        """Transform P2P link to HTTP local proxy endpoint."""
         infohash = self.extract_infohash(url)
         if infohash:
-            return f"http://127.0.0.1:{self.local_proxy_port}/p2p/{infohash}"
-
+            return f"http://{self.local_proxy_host}:{self.local_proxy_port}/p2p/{infohash}"
         return url

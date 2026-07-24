@@ -1,27 +1,17 @@
-#!/bin/bash
-# ALL-IN-One-IPTV — Run Locally
-# Run the full aggregation pipeline locally
+#!/usr/bin/env bash
+set -eo pipefail
 
-set -e
+GREEN='\033[0;32m'
+NC='\033[0m'
 
-echo "📡 ALL-IN-One-IPTV — Running Pipeline"
-echo "======================================"
+echo -e "${GREEN}Running engine locally...${NC}"
 
-# Run the modular engine
-cd "$(dirname "$0")/.."
-
-if [ "$1" == "--fast" ]; then
-    echo "⚡ Fast mode (no link verification)..."
-    python3 -m engine.src.main --no-verify "$@"
-else
-    echo "🔍 Full mode (with link verification)..."
-    python3 -m engine.src.main "$@"
+if [ ! -d "venv" ]; then
+    echo "Virtual environment not found. Running setup.sh first..."
+    ./scripts/setup.sh
 fi
 
-echo ""
-echo "📁 Output files:"
-ls -lh output/*.m3u 2>/dev/null || echo "No output files found."
+source venv/bin/activate
+python -m engine.src
 
-echo ""
-echo "🌐 Preview (first 10 channels):"
-head -30 output/combined_by_country.m3u 2>/dev/null || echo "No combined playlist found."
+echo -e "${GREEN}Engine execution completed!${NC}"

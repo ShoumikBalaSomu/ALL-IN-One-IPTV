@@ -1,32 +1,35 @@
-# Security & Secrets Management
+# 🛡️ Security Policy
 
-To run the automated CI/CD pipeline and the Phase 1 Aggregator successfully, you must configure GitHub Secrets to store your sensitive credentials safely.
+Security is a top priority for the **ALL-IN-ONE IPTV** ecosystem. We are committed to ensuring our platform, scrapers, and client applications are secure and protect user privacy.
 
-**NEVER HARDCODE CREDENTIALS, TOKENS, OR KEYSTORES IN THE REPOSITORY CODE.**
+## Supported Versions
 
-## 1. Required Secrets for CI/CD (Phase 5)
+We currently provide security updates for the following versions:
 
-To automatically compile and sign the Android release builds (`.apk` and `.aab`), navigate to:
-**GitHub Repository -> Settings -> Secrets and variables -> Actions**, and add the following **Repository Secrets**:
+| Version | Supported          |
+| ------- | ------------------ |
+| 2.x.x   | ✅ Yes             |
+| 1.x.x   | ❌ No              |
+| < 1.0   | ❌ No              |
 
-| Secret Name | Description |
-| :--- | :--- |
-| `KEYSTORE_BASE64` | The Base64 encoded string of your Android `upload-keystore.jks` file. |
-| `KEYSTORE_PASSWORD` | The password for your keystore file. |
-| `KEY_ALIAS` | The alias of the key within the keystore. |
-| `KEY_PASSWORD` | The password for the specific key alias. |
+## Reporting a Vulnerability
 
-### How to generate `KEYSTORE_BASE64`
-Run this command on your local terminal (Linux/macOS) to convert your `.jks` file to a Base64 string that can be pasted into GitHub Secrets:
-```bash
-base64 -i upload-keystore.jks > keystore_base64.txt
-# Open keystore_base64.txt and copy its contents into GitHub Secrets
-```
+We deeply appreciate the efforts of security researchers and our community in keeping this project safe. 
 
-## 2. GitHub Action Token (`GITHUB_TOKEN`)
-The `GITHUB_TOKEN` is automatically provided by GitHub Actions for creating releases. 
-*   Ensure that your repository has the correct permissions. Go to **Settings -> Actions -> General**.
-*   Under **Workflow permissions**, select **Read and write permissions**. This allows the `softprops/action-gh-release` step to attach the compiled binaries to the release.
+If you discover a security vulnerability within ALL-IN-ONE IPTV, please **DO NOT** disclose it publicly via GitHub Issues. 
 
-## 3. Custom API Keys (Future Proofing)
-If Phase 2 (The Player) integrates the TMDB API for movie posters, add the key as `TMDB_API_KEY`. The Dart compile step will inject this via `--dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}`.
+Instead, please report it via one of the following methods:
+
+1. **Private GitHub Advisory:** Use the "Security" tab on our GitHub repository to create a new private advisory.
+2. **Direct Contact:** If an email is listed on the repository owner's GitHub profile, you may send the report there with the subject `[SECURITY VULNERABILITY] ALL-IN-ONE IPTV`.
+
+### What to Include in Your Report
+- A detailed description of the vulnerability.
+- Steps to reproduce the issue.
+- Potential impact and risk assessment.
+- (Optional) Suggested remediation or patch.
+
+### Response Timeline
+We will acknowledge receipt of your vulnerability report within **48 hours**. We aim to triage and resolve reported vulnerabilities as swiftly as possible, typically within **7 days** for critical issues.
+
+Thank you for helping keep ALL-IN-ONE IPTV secure!
