@@ -39,7 +39,7 @@ fi
 # Run Engine
 echo ""
 echo "[3/3] Running Playlist Engine..."
-python3 aggregator.py || python3 -m engine.src.main --no-verify
+python3 -m engine.src.main
 echo "✅ Playlists: output/"
 
 echo ""
