@@ -1,8 +1,24 @@
-FROM jrottenberg/ffmpeg:6.0-ubuntu2004
+FROM jrottenberg/ffmpeg:6.0-ubuntu
 
-LABEL maintainer="ShoumikBalaSomu"
-LABEL description="ALL-IN-ONE IPTV Transcoder"
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    hwinfo \
+    va-driver-all \
+    vainfo \
+    intel-media-va-driver-non-free \
+    libmfx1 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-# Add transcode scripts/configs here
-CMD ["ffmpeg", "-version"]
+
+RUN groupadd -r transcoder && useradd -r -g transcoder -d /home/transcoder transcoder \
+    && mkdir -p /home/transcoder /app/output \
+    && chown -R transcoder:transcoder /home/transcoder /app
+
+USER transcoder
+
+ENTRYPOINT ["ffmpeg"]
+CMD ["-hwaccel", "auto", "-version"]

@@ -1,24 +1,35 @@
-# 🏛️ Legal Information
+# ⚖️ LEGAL NOTICE
 
-## DMCA Policy
+## Copyright and Licensing
+This project, **ALL-IN-One IPTV**, is released under the **MIT License**.
 
-**ALL-IN-ONE IPTV** is an open-source project designed to aggregate and validate publicly available IPTV streams. We respect the intellectual property rights of others and expect our users to do the same.
+Copyright (c) 2026 ALL-IN-One IPTV Contributors.
 
-Because we **do not host any media files**, we cannot take down the actual video content. However, we are fully willing to remove links to copyrighted material from our automated indexes.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-### Submitting a Takedown Request
-If you are a copyright owner or an agent thereof, and you believe that any link aggregated by our project infringes upon your copyrights, you may submit a notification pursuant to the Digital Millennium Copyright Act ("DMCA").
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-Please provide the following information to our repository maintainer via an official GitHub Issue or directly via email (if provided in the maintainer's profile):
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-1. A physical or electronic signature of a person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.
-2. Identification of the copyrighted work claimed to have been infringed.
-3. Identification of the specific link(s) (e.g., the exact M3U8 URL) that is claimed to be infringing and that is to be removed.
-4. Information reasonably sufficient to permit us to contact you, such as an address, telephone number, and email address.
-5. A statement that you have a good faith belief that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law.
-6. A statement that the information in the notification is accurate, and under penalty of perjury, that you are authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.
+---
 
-Upon receipt of a valid request, the specified URLs will be blacklisted in our scraping engine to prevent them from appearing in future playlist generations.
+## Terms of Use
 
-## Terms of Service
-This software is for educational and personal use only. Commercial use of the aggregated lists may violate the terms of service of the original stream providers.
+1. **User Responsibility:** You, the user, assume full legal responsibility for any media content you choose to stream or access using the ALL-IN-One IPTV engine or its front-end clients.
+2. **No Piracy Endorsement:** The developers of this project do not condone or endorse piracy. The tools provided are neutral technological frameworks capable of playing any valid URL.
+3. **Data Harvesting:** The automated scraping tools (`Harvester`) provided in the engine are designed to interact with public internet resources. Users must ensure they comply with the `robots.txt` and Terms of Service of any target websites they choose to scrape.
+
+## DMCA and Takedowns
+As outlined in the [DISCLAIMER](DISCLAIMER.md), this project does not host media. All playlists are dynamically generated pointers to external content. We cannot take down a video stream because we do not host it. Any copyright infringement notices should be directed to the ISP or hosting provider of the actual media server.

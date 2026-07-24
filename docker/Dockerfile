@@ -1,29 +1,35 @@
-# Build stage
-FROM python:3.11-slim AS builder
+# Stage 1: Build
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
-COPY engine/requirements.txt .
-RUN pip install --user --no-cache-dir -r requirements.txt
+COPY requirements.txt .
 
-# Final stage
-FROM python:3.11-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --user --no-cache-dir -r requirements.txt
 
-LABEL maintainer="ShoumikBalaSomu"
-LABEL description="ALL-IN-ONE IPTV Engine (Year 3050 Spec)"
+# Stage 2: Production
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/home/appuser/.local/bin:${PATH}"
+
+RUN groupadd -r appuser && useradd -r -g appuser -d /home/appuser -s /sbin/nologin -c "App User" appuser \
+    && mkdir -p /home/appuser/.local /app/output \
+    && chown -R appuser:appuser /home/appuser /app
 
 WORKDIR /app
 
-# Copy dependencies
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+COPY --from=builder /root/.local /home/appuser/.local
+COPY . .
 
-# Copy application code
-COPY engine/ ./engine/
-COPY input/ ./input/
-COPY output/ ./output/
+RUN chown -R appuser:appuser /app
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD python3 -c "import sys; sys.exit(0)"
+USER appuser
 
-CMD ["python3", "-m", "engine.src.main"]
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')" || exit 1
+
+CMD ["python", "-m", "engine.src.main"]

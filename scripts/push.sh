@@ -1,20 +1,42 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 
+RED='\033[0;31m'
 GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
 NC='\033[0m'
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 <commit-message>"
+usage() {
+    echo -e "${YELLOW}Usage: $0 -m \"Commit message\"${NC}"
+    echo "Options:"
+    echo "  -h, --help       Show this help message"
+    echo "  -m, --message    Commit message (required)"
+}
+
+COMMIT_MSG=""
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -h|--help) usage; exit 0 ;;
+        -m|--message) COMMIT_MSG="$2"; shift ;;
+        *) echo -e "${RED}Unknown parameter passed: $1${NC}"; usage; exit 1 ;;
+    esac
+    shift
+done
+
+if [ -z "$COMMIT_MSG" ]; then
+    echo -e "${RED}Error: Commit message is required.${NC}"
+    usage
     exit 1
 fi
 
-echo -e "${GREEN}Formatting and linting...${NC}"
-# Add linting commands here if applicable
-
-echo -e "${GREEN}Committing and pushing to GitHub...${NC}"
+echo -e "${GREEN}Staging changes...${NC}"
 git add .
-git commit -m "$1"
-git push
 
-echo -e "${GREEN}Successfully pushed!${NC}"
+echo -e "${GREEN}Committing changes...${NC}"
+git commit -m "$COMMIT_MSG"
+
+echo -e "${GREEN}Pushing to remote...${NC}"
+git push origin HEAD
+
+echo -e "${GREEN}Push completed successfully!${NC}"

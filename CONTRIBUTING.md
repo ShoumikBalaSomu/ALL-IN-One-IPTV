@@ -1,51 +1,85 @@
-# 🤝 Contributing to ALL-IN-ONE IPTV
+# Contributing to ALL-IN-One IPTV
 
-First off, thank you for considering contributing to ALL-IN-ONE IPTV! It's people like you that make open-source such a great community.
+First off, thank you for considering contributing to ALL-IN-One IPTV! It's people like you that make this ecosystem great.
 
-## 🚀 How Can I Contribute?
+## 🚀 Environment Setup
 
-### Reporting Bugs
-- Ensure the bug was not already reported by searching on GitHub under [Issues](https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/issues).
-- If you're unable to find an open issue addressing the problem, open a new one. Be sure to include a title and clear description, as much relevant information as possible, and a code sample or an executable test case demonstrating the expected behavior that is not occurring.
+### 1. Python Engine (Backend)
+- Ensure **Python 3.12+** is installed.
+- Install dependencies:
+  ```bash
+  cd engine
+  pip install -r requirements.txt
+  ```
 
-### Suggesting Enhancements
-- Open a new issue with the `enhancement` label.
-- Provide a clear and detailed explanation of the feature.
-- Explain why this enhancement would be useful to most users.
+### 2. Ktor Gateway (API)
+- Ensure **JDK 17+** is installed.
+- Run Gradle wrapper:
+  ```bash
+  cd api
+  ./gradlew build
+  ```
 
-### Pull Requests
-1. Fork the repo and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes.
-5. Make sure your code lints.
-6. Issue that pull request!
+### 3. Flutter Client (Mobile/Desktop)
+- Ensure **Flutter 3.24+** is installed.
+- Get packages:
+  ```bash
+  cd clients/flutter_app
+  flutter pub get
+  ```
 
-## 💅 Code Style Guidelines
+## 📐 Code Style Standards
 
-- **Python**: We adhere strictly to [PEP 8](https://peps.python.org/pep-0008/). Use `black` for formatting and `flake8` for linting. Type hints are mandatory for all new functions.
-- **Dart/Flutter**: Follow the official [Dart style guide](https://dart.dev/guides/language/effective-dart/style).
-- **Web**: Use `Prettier` for formatting HTML, CSS, and JS/TS.
+We enforce strict coding standards to maintain a pristine codebase.
 
-## 📝 Pull Request Template
+- **Python**: Follow [PEP 8](https://peps.python.org/pep-0008/). Use `black` for formatting and `mypy` for static type checking.
+- **Dart (Flutter)**: Follow the official [Dart style guide](https://dart.dev/guides/language/effective-dart/style). Run `flutter format .`.
+- **Kotlin**: Follow the official [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html). Use `ktlint`.
 
-When creating a PR, please use the following structure:
+## 🌳 Git Workflow & Conventional Commits
 
-```markdown
-### Description
-Briefly describe the changes in this PR.
+We use the feature-branch workflow and enforce **Conventional Commits**.
 
-### Related Issue
-Fixes # (issue number)
+### Branch Naming
+- `feature/your-feature-name`
+- `fix/bug-name`
+- `docs/update-name`
 
-### Type of change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Documentation update
-- [ ] Performance improvement
+### Commit Message Format
+Must follow: `<type>(<scope>): <subject>`
 
-### Checklist
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-```
+Examples:
+- `feat(engine): implement ai quantum healer algorithm`
+- `fix(flutter): resolve UI overflow in multi-view grid`
+- `refactor(api): migrate routes to separate modules`
+- `docs(readme): update feature matrix`
+
+## ✅ Pull Request Checklist
+
+Before submitting a PR, please ensure:
+- [ ] Code compiles and passes all CI tests.
+- [ ] Code is formatted using the respective language tools (`black`, `flutter format`, `ktlint`).
+- [ ] Commit messages follow the Conventional Commits standard.
+- [ ] Documentation (and docstrings) has been updated if necessary.
+- [ ] You have rebased against the latest `main` branch.
+
+## 🐛 Bug Report Template
+
+When opening an issue for a bug, please use the following format:
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Run engine with '...'
+2. Open Flutter app '...'
+3. See error
+
+**Expected behavior**
+A clear description of what you expected to happen.
+
+**Environment details**
+- OS: [e.g. Ubuntu 22.04]
+- Component: [e.g. Python Engine, Web Player]
+- Version: [e.g. 2.1.0]

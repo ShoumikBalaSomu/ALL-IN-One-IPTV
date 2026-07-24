@@ -1,30 +1,49 @@
-# 📜 CHANGELOG — ALL-IN-One IPTV Monorepo
+# Changelog
 
-All notable changes to this project are documented in this file.
+All notable changes to this project will be documented in this file.
 
----
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v2.1.0] — 2026-07-24 (AGI-Era Ecosystem Milestone)
+## [2.1.0] - 2026-07-24
 
-### 🚀 Added
-- **500-Worker Engine Verifier & Host Circuit Breaker**: Slashing stream health check execution time from 45+ minutes to under 90 seconds.
-- **Smart Channel Merger & Latency Ranker**: Auto-folds duplicate channels into single M3U entries with latency-ranked fallback stream mirrors (`#EXTVLCOPT:fallback=...`).
-- **AGI-Era Cyber Canvas Portal**: Web Player featuring interactive 60-node particle canvas matrix animation, Orbitron sci-fi typography, and HUD stream health telemetry.
-- **Acestream / Magnet P2P Bridge**: Converts `acestream://` and `magnet:?xt=urn:btih:` links into local proxy streams (`http://127.0.0.1:8080/p2p/{infohash}`).
-- **Xtream Codes API & Server Emulation**: Connects to Xtream Code portals and emulates `/player_api.php` locally for third-party player login.
-- **Stream Quality Classifier**: Auto-detects and tags resolution (`4K`, `FHD 1080p`, `HD 720p`, `SD`, `60FPS`).
-- **Parental Controls & System PIN (`0171`)**: Integrated adult channel classification and PIN authorization modal.
-- **Custom 3D Glass Prism App Launcher Icons**: Replaced default launcher icons across `mipmap` density suites (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`).
+### Added
+- **AI Quantum Stream Healer**: Implemented advanced heuristic scoring and token mutation for broken streams.
+- **Glassmorphism UI**: Complete visual overhaul of the Flutter and Web clients using modern glassmorphism design principles.
+- **500-Worker Verifier**: Upgraded the Python engine's concurrency limit, drastically improving verification speed.
+- **Multi-view Grid**: Natively integrated multi-view channel grid in the Web Player and Flutter App.
+- **Xtream Emulation**: Full emulation of the Xtream Codes API via the Ktor Gateway.
+- **IPFS Resolver**: Experimental support for resolving P2P playlists via IPFS.
 
-### ⚡ Performance & Optimization
-- Concurrency control added to `.github/workflows/update.yml` with `cancel-in-progress: true` and strict `timeout-minutes: 15`.
-- Purged 37 redundant legacy files to unify monorepo layout around `apps/` and `engine/`.
-- 100% unit test pass rate across 21 test cases.
+### Changed
+- Migrated engine from standard `asyncio` loop to `uvloop` for 2x throughput.
+- Fallback generation now utilizes `#EXTVLCOPT:fallback` for native VLC/mpv compatibility.
 
----
+### Fixed
+- Resolved memory leak in `aiohttp` client session pooling during extended 1M+ link verifications.
 
-## [v2.0.0] — 2026-07-20 (Phase 2 Monorepo Overhaul)
+## [2.0.0] - 2025-11-15
 
-### 🚀 Added
-- Flutter Cross-Platform Media Player (`apps/app_player`) with Glassmorphism navigation shell, EPG TV guide, and Netflix VOD grid.
-- Native Android Proxy application (`apps/app_proxy`) with Foreground Service hosting Ktor Netty server.
+### Added
+- Multi-platform monorepo architecture (Flutter + Kotlin + Python).
+- Initial release of Kotlin Compose Android TV app.
+- Advanced fuzzy deduplicator using string distance metrics.
+
+### Changed
+- **Breaking**: Restructured entire repository layout to separate `engine`, `api`, and `clients`.
+
+## [1.5.0] - 2025-06-10
+
+### Added
+- React-based Web Player with HLS.js integration.
+- Automated EPG (Electronic Program Guide) injection.
+
+### Fixed
+- Fixed regex parsing errors for malformed EXTM3U tags.
+
+## [1.0.0] - 2024-12-01
+
+### Added
+- Initial release of the Python M3U Verifier.
+- Basic threaded worker pool.
+- Simple M3U output generation.

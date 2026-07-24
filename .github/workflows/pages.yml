@@ -1,11 +1,9 @@
-name: Deploy Pages
+name: Deploy GitHub Pages
 
 on:
   push:
     branches:
       - main
-    paths:
-      - '.github/pages/**'
   workflow_dispatch:
 
 permissions:
@@ -26,15 +24,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Setup Pages
-        uses: actions/configure-pages@v4
-        
+        uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.github/pages/'
-          
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

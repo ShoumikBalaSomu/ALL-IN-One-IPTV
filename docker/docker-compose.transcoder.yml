@@ -3,12 +3,19 @@ version: '3.8'
 services:
   transcoder:
     build:
-      context: ..
+      context: ../
       dockerfile: docker/Dockerfile.transcoder
     container_name: iptv-transcoder
     restart: unless-stopped
-    volumes:
-      - ../input:/app/input
-      - ../output:/app/output
     environment:
-      - TZ=UTC
+      - FFREPORT=file=/app/output/ffreport.log:level=32
+    devices:
+      - "/dev/dri:/dev/dri"
+    volumes:
+      - ../input_streams:/app/input
+      - ../output_streams:/app/output
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"

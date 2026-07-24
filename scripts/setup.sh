@@ -1,28 +1,39 @@
 #!/usr/bin/env bash
-# ALL-IN-One IPTV — Environment Setup Script
 set -eo pipefail
 
+RED='\033[0;31m'
 GREEN='\033[0;32m'
-CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${CYAN}🚀 Setting up ALL-IN-One IPTV Development Environment...${NC}"
+usage() {
+    echo -e "${YELLOW}Usage: $0 [options]${NC}"
+    echo "Options:"
+    echo "  -h, --help       Show this help message"
+}
 
-# Python environment
-if [ ! -d "venv" ]; then
-    echo -e "${GREEN}Creating Python virtual environment...${NC}"
-    python3 -m venv venv
-fi
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -h|--help) usage; exit 0 ;;
+        *) echo -e "${RED}Unknown parameter passed: $1${NC}"; usage; exit 1 ;;
+    esac
+    shift
+done
 
-source venv/bin/activate
+echo -e "${GREEN}Setting up development environment...${NC}"
+
+echo -e "${YELLOW}Checking dependencies...${NC}"
+command -v python3 >/dev/null 2>&1 || { echo -e "${RED}Python 3 is required but not installed.${NC}"; exit 1; }
+command -v docker >/dev/null 2>&1 || { echo -e "${RED}Docker is required but not installed.${NC}"; exit 1; }
+
+echo -e "${YELLOW}Creating virtual environment...${NC}"
+python3 -m venv .venv
+source .venv/bin/activate
+
+echo -e "${YELLOW}Installing Python dependencies...${NC}"
 pip install --upgrade pip
-if [ -f "engine/requirements.txt" ]; then
-    echo -e "${GREEN}Installing engine requirements...${NC}"
-    pip install -r engine/requirements.txt
+if [ -f requirements.txt ]; then
+    pip install -r requirements.txt
 fi
 
-# Create directories
-echo -e "${GREEN}Creating directory structure...${NC}"
-mkdir -p input output logs docker scripts apps/app_player apps/app_proxy .github/workflows .github/pages docs/assets
-
-echo -e "${CYAN}✅ Setup complete! Virtual environment activated.${NC}"
+echo -e "${GREEN}Setup completed successfully!${NC}"

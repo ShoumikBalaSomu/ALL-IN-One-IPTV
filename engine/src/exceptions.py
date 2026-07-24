@@ -1,14 +1,11 @@
-"""
-Custom exceptions.
-"""
-class IPTVEngineError(Exception):
-    """Base exception for IPTV Engine."""
+class EngineError(Exception):
     pass
 
-class ParsingError(IPTVEngineError):
-    """Error parsing M3U."""
+class ParserError(EngineError):
     pass
 
-class FetchError(IPTVEngineError):
-    """Error fetching data."""
+class VerificationError(EngineError):
+    pass
+
+class ConfigurationError(EngineError):
     pass

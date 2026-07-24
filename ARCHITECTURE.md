@@ -1,71 +1,102 @@
-# 🏗️ ALL-IN-One IPTV — Enterprise Architecture Specification
+# 📐 Architecture Specification
 
-> **The Ultimate All-In-One IPTV Ecosystem**: Automated Aggregator, Parallel Health Verifier, Smart Stream Fallback Engine, Cross-Platform Unified Player, Native Android Local Proxy, and Glassmorphic Web App.
+This document details the low-level architectural design of the **ALL-IN-One IPTV** ecosystem.
 
----
+## 🔄 Data Flow Diagrams
 
-## 📐 Monorepo High-Level Architecture
+### High-Level Component Diagram
 
 ```mermaid
 graph TD
-    A[Public M3U & IPTV Sources 60+ Feeds] -->|Async Scraper| B(Python Engine Pipeline)
-    C[Encrypted Local .enc Files] -->|AES-256-GCM Decryptor| B
-    D[Xtream Codes Portals] -->|API Parser| B
-    E[Acestream / P2P Magnet Links] -->|P2P Bridge| B
-
-    subgraph "Backend Engine (engine/src)"
-        B --> F[M3U Parser & Normalizer]
-        F --> G[Fuzzy Deduplicator]
-        G --> H[Parallel HTTP HEAD Verifier]
-        H --> I[XMLTV EPG Guide Fetcher]
-        I --> J[Quality Classifier 4K/FHD]
-        J --> K[Content Filter & PIN 0171]
-        K --> L[M3U / JSON / IPFS Exporter]
+    subgraph Data Acquisition
+        H[Harvester Bots] --> |Raw M3U/TXT| RawStore[(Raw Data Store)]
+    end
+    
+    subgraph Python Engine Tier
+        RawStore --> Parser[M3U Parser]
+        Parser --> Dup[Fuzzy Deduplicator]
+        Dup --> Queue[Verification Queue]
+        Queue --> V[500-Worker Sentinel]
+        V -- Fails --> QHealer[AI Quantum Healer]
+        QHealer -- Repaired --> Queue
+        V -- Passes --> DB[(Clean SQLite/Redis)]
     end
 
-    L -->|Output Feeds| M[output/checked_combined_by_country.m3u]
-    L -->|Master Feed| N[output/combined_by_country.m3u]
-    L -->|IPFS CIDs| O[Decentralized Gateways]
+    subgraph API & Gateway Tier
+        DB --> Ktor[Ktor API Gateway]
+        Ktor --> XAPI[Xtream Codes Emulator]
+        Ktor --> HLS[HLS Proxy]
+    end
 
-    subgraph "Clients & Proxies"
-        M --> P[Flutter Unified Player - Android/Desktop/Web]
-        M --> Q[Native Android Proxy - Ktor Foreground Service]
-        M --> R[Glassmorphic Web App - HLS.js]
-        Q -->|Instant 302 Redirect| S[TiviMate / OTT Navigator / External Players]
+    subgraph Client Tier
+        XAPI --> Flutter[Flutter Mobile/Desktop]
+        XAPI --> AndroidTV[Kotlin Compose TV]
+        HLS --> Web[React Web Player]
     end
 ```
 
----
+### Stream Verification Sequence
 
-## ⚡ Core Component Specification
+```mermaid
+sequenceDiagram
+    participant Queue as Verifier Queue
+    participant Worker as Async Worker
+    participant Stream as Target URL
+    participant Healer as Quantum Healer
+    
+    Queue->>Worker: Dispatch Link
+    Worker->>Stream: HTTP HEAD/GET (Timeout 1.5s)
+    
+    alt 200 OK (MPEG-TS/HLS)
+        Stream-->>Worker: Success
+        Worker->>Queue: Mark Alive
+    else 403 / 404 / 500 / Timeout
+        Stream-->>Worker: Error
+        Worker->>Healer: Send for Repair
+        Healer->>Healer: Analyze tokens/CDN
+        Healer-->>Queue: Return Mutated Link
+    end
+```
 
-### 1. Backend Engine (`engine/src`)
-- **Async Scraper (`scraper.py`)**: Fetches 60+ global M3U sources asynchronously using `aiohttp`.
-- **Parser (`parser.py`)**: Regex-based M3U parser handling `#EXTINF`, `#EXTVLCOPT`, cookies, logos, and tvg metadata.
-- **Parallel Health Verifier (`verifier.py`)**: Executes concurrent HTTP HEAD requests with domain reachability caching (verifying 10,000+ alive domains in under 4 minutes).
-- **Fuzzy Search Engine (`search_engine.py`)**: Sub-millisecond `SequenceMatcher` fuzzy search for channel titles, countries, and qualities.
-- **Content Filter (`content_filter.py`)**: Regex explicit content detection paired with system PIN (`0171`) authorization.
-- **Acestream Bridge (`torrent_bridge.py`)**: Transforms `acestream://` and `magnet:?xt=urn:btih:` into HTTP proxy streams (`http://127.0.0.1:8080/p2p/{infohash}`).
+## 🧠 AI Quantum Healer & Fallback Mechanics
 
-### 2. Flutter Unified Player (`apps/app_player`)
-- **UI Architecture**: Glassmorphism design system using `GoogleFonts.outfit`, deep radial mesh gradients, and `flutter_animate`.
-- **Dual Mode**:
-  - **Live TV Mode**: Category sidebar, EPG schedule, channel list, and mini-player.
-  - **Netflix VOD Mode**: Cinematic hero header, poster card grid, and detail modals.
-- **Smart Fallback Engine**: Monitors `media_kit` error events and auto-switches stream URLs within 1.5 seconds if a channel drops out.
+The **AI Quantum Healer** is a deterministic, heuristic engine designed to repair streams.
 
-### 3. Native Android Proxy (`apps/app_proxy`)
-- **Architecture**: Android `ForegroundService` with ongoing notification hosting an embedded Ktor Netty server on `http://127.0.0.1:8080`.
-- **Real-Time Redirects**: `/play/{channelId}` runs async HTTP HEAD checks across channel fallback mirrors and returns an instant `HTTP 302 Redirect` to the fastest responsive link.
-- **Xtream Codes Emulation**: `/player_api.php` allows third-party IPTV apps (TiviMate, Smarters) to authenticate locally.
+### Scoring Formula
+Every stream is assigned a Quantum Reliability Score ($QRS$):
 
-### 4. Glassmorphic Web App (`docs/`)
-- Client-side browser application powered by HLS.js, supporting channel searching, category chips, live video streaming, and PIN modal unlocking.
+$$ QRS = w_1 S + w_2 \left(1 - \frac{L}{L_{max}}\right) + w_3 P $$
 
----
+- $S$: Stability ratio (uptime / total checks)
+- $L$: Measured Latency
+- $L_{max}$: Max acceptable latency (e.g., 1500ms)
+- $P$: Penalty factor for geo-blocks or CDN instability
+- $w_1, w_2, w_3$: Tunable algorithmic weights.
 
-## 🛡️ Security & Privacy Architecture
+### Fallback Mechanics (EXTVLCOPT)
+When the system detects multiple sources for the same channel, it aggregates them into a primary and fallback structure using standard VLC extended options:
 
-- **AES-256-GCM Encryption**: Secure local playlist storage via `engine/src/encryption.py`.
-- **Header Preservation**: Preserves user-agent and cookie tokens attached to stream URLs.
-- **Legal Compliance**: DMCA compliant design hosting zero media content on repository servers.
+```m3u
+#EXTINF:-1 tvg-id="cnn" tvg-logo="cnn.png", CNN
+#EXTVLCOPT:network-caching=1000
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:fallback=http://backup-source.com/cnn.m3u8
+http://primary-source.com/cnn.m3u8
+```
+
+## 🧵 Concurrency Model: Threading vs Async
+
+Traditional IPTV verifiers use threading (e.g., `concurrent.futures.ThreadPoolExecutor`), which limits scalability due to OS thread context switching and the Python GIL.
+
+**ALL-IN-One IPTV** utilizes an entirely asynchronous architecture:
+- **`asyncio` + `uvloop`**: Event loop replacing threads.
+- **`aiohttp`**: Non-blocking network I/O.
+- **Semaphore Limits**: We comfortably run 500-1000 concurrent verifications per core without memory bloat.
+
+## 🗺️ Monorepo Directory Map
+
+- `/engine`: Python 3.12 Core. Contains modules: `harvester`, `verifier`, `healer`, `deduplicator`.
+- `/api`: Kotlin Ktor backend. Handles routing, rate limiting, and Xtream Emulation.
+- `/clients/flutter_app`: Dart/Flutter source for iOS, Android, macOS, Windows.
+- `/clients/web_player`: TypeScript/React code for the browser interface.
+- `/playlists`: Output directory for `.m3u` artifacts.
