@@ -3,411 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALL-IN-ONE IPTV | Premium Open Source IPTV</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #050505;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --accent-1: #ff2a5f;
-            --accent-2: #4318ff;
-            --accent-3: #00d2ff;
-            --text-main: #f0f0f0;
-            --text-muted: #999;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        /* Animated Gradient Background */
-        .bg-animated {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            background: linear-gradient(45deg, var(--bg-color), #0a0a1a, #1a0b1c);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-        }
-
-        .ambient-light {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.5;
-            z-index: -1;
-        }
-
-        .light-1 {
-            top: -10%; left: -10%; width: 50vw; height: 50vw;
-            background: radial-gradient(circle, var(--accent-2) 0%, transparent 70%);
-            animation: float 20s infinite alternate;
-        }
-
-        .light-2 {
-            bottom: -10%; right: -10%; width: 60vw; height: 60vw;
-            background: radial-gradient(circle, var(--accent-1) 0%, transparent 70%);
-            animation: float 25s infinite alternate-reverse;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes float {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(100px, 50px); }
-        }
-
-        /* Glassmorphism Utilities */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-        }
-
-        /* Navbar */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 20px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            transition: all 0.3s ease;
-        }
-
-        nav.scrolled {
-            background: rgba(5, 5, 5, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 15px 5%;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(to right, var(--accent-3), var(--accent-2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .nav-links a {
-            color: var(--text-main);
-            text-decoration: none;
-            margin-left: 30px;
-            font-weight: 600;
-            transition: color 0.3s;
-        }
-        .nav-links a:hover {
-            color: var(--accent-3);
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 5%;
-            position: relative;
-        }
-
-        .hero h1 {
-            font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 20px;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            max-width: 600px;
-            margin-bottom: 40px;
-        }
-
-        .btn {
-            padding: 16px 32px;
-            border-radius: 30px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: none;
-            font-size: 1.1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(45deg, var(--accent-2), var(--accent-1));
-            color: white;
-            box-shadow: 0 10px 20px rgba(67, 24, 255, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(67, 24, 255, 0.5);
-        }
-
-        .btn-secondary {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        /* Stats */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 60px;
-            width: 100%;
-            max-width: 1000px;
-        }
-
-        .stat-card {
-            padding: 30px;
-            text-align: center;
-        }
-
-        .stat-card h3 {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 2.5rem;
-            background: linear-gradient(to right, var(--accent-3), var(--accent-1));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stat-card p {
-            margin: 10px 0 0;
-            font-size: 1rem;
-            color: var(--text-muted);
-        }
-
-        /* Features */
-        .section {
-            padding: 100px 5%;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 50px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .feature-card {
-            padding: 40px;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-        }
-
-        .feature-icon {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-
-        /* Architecture */
-        .arch-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px;
-            text-align: center;
-        }
-        
-        .code-block {
-            font-family: 'JetBrains Mono', monospace;
-            text-align: left;
-            padding: 20px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.5);
-            margin-top: 20px;
-            color: #a9b7c6;
-        }
-
-        /* Footer */
-        footer {
-            padding: 50px 5%;
-            text-align: center;
-            border-top: 1px solid var(--glass-border);
-            margin-top: 50px;
-        }
-
-        /* Map */
-        .map-placeholder {
-            width: 100%;
-            height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--text-muted);
-        }
-
-    </style>
+    <title>ALL-IN-One IPTV — World-Class Ecosystem & Web Player</title>
+    <meta name="description" content="Ultimate open-source cross-platform IPTV ecosystem with auto-updating channels, smart stream fallback, and high-performance native players.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HLS.js Video Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-panel">
+            <div class="brand">
+                <img src="assets/app_icon.png" alt="Logo" class="brand-logo" onerror="this.src='../screenshot.png'">
+                <div class="brand-text">
+                    <span class="brand-title">ALL-IN-ONE</span>
+                    <span class="brand-subtitle">IPTV ECOSYSTEM</span>
+                </div>
+            </div>
 
-    <div class="bg-animated">
-        <div class="ambient-light light-1"></div>
-        <div class="ambient-light light-2"></div>
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="player">
+                    <i class="fa-solid fa-play"></i> <span>Web Player</span>
+                </button>
+                <button class="nav-item" data-tab="downloads">
+                    <i class="fa-solid fa-download"></i> <span>Downloads</span>
+                </button>
+                <button class="nav-item" data-tab="proxy">
+                    <i class="fa-solid fa-network-wired"></i> <span>Proxy Gateway</span>
+                </button>
+                <button class="nav-item" data-tab="playlists">
+                    <i class="fa-solid fa-list-check"></i> <span>Playlists & Feeds</span>
+                </button>
+                <button class="nav-item" data-tab="docs">
+                    <i class="fa-solid fa-book-open"></i> <span>Documentation</span>
+                </button>
+            </nav>
+
+            <div class="system-status-box glass-card">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span class="status-text">Engine Alive</span>
+                </div>
+                <div class="status-meta">97,547 Channels Verified</div>
+            </div>
+        </aside>
+
+        <!-- Main Content View -->
+        <main class="main-content">
+            <!-- Header Bar -->
+            <header class="top-header glass-panel">
+                <div class="header-search">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="channelSearch" placeholder="Search 200,000+ channels by name, country, or 4K/FHD resolution..." />
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-icon" id="pinUnlockBtn" title="Parental Controls (PIN 0171)">
+                        <i class="fa-solid fa-lock"></i> <span id="pinStatusText">PIN Locked</span>
+                    </button>
+                    <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV" target="_blank" class="btn btn-primary">
+                        <i class="fa-brands fa-github"></i> <span>GitHub Repo</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- TAB 1: WEB PLAYER -->
+            <section id="tab-player" class="tab-content active">
+                <div class="player-grid">
+                    <!-- Video Stage -->
+                    <div class="video-container glass-card">
+                        <video id="videoPlayer" controls autoplay poster="assets/app_icon.png"></video>
+                        <div class="video-overlay-info" id="currentStreamInfo">
+                            <span class="badge badge-live">LIVE</span>
+                            <span class="stream-title" id="activeStreamTitle">Select a channel from playlist</span>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Channel List -->
+                    <div class="playlist-sidebar glass-card">
+                        <div class="playlist-header">
+                            <h3>Live TV Guide</h3>
+                            <span class="badge badge-accent" id="channelCountBadge">0 Channels</span>
+                        </div>
+
+                        <!-- Category Filters -->
+                        <div class="category-scroll" id="categoryChips">
+                            <button class="chip active" data-group="all">All</button>
+                            <button class="chip" data-group="Bangladesh">Bangladesh</button>
+                            <button class="chip" data-group="India">India</button>
+                            <button class="chip" data-group="United States">USA</button>
+                            <button class="chip" data-group="Sports">Sports</button>
+                            <button class="chip" data-group="Movies">Movies</button>
+                            <button class="chip" data-group="News">News</button>
+                            <button class="chip" data-group="4K">4K Ultra HD</button>
+                        </div>
+
+                        <!-- Channel Scroll List -->
+                        <div class="channel-list" id="channelListContainer">
+                            <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading Channels...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: DOWNLOADS -->
+            <section id="tab-downloads" class="tab-content">
+                <div class="hero-card glass-card">
+                    <h1 class="gradient-title">Download Production Applications</h1>
+                    <p class="hero-subtitle">Cross-platform native media players & local Android proxies built for zero latency, hardware acceleration, and smart stream fallback.</p>
+                    
+                    <div class="download-grid">
+                        <div class="download-card glass-panel">
+                            <div class="card-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                            <h3>Flutter Unified Player</h3>
+                            <p>Full-featured cross-platform player with Glassmorphism mesh UI, EPG TV guide, Netflix-style VOD, and libVLC hardware acceleration.</p>
+                            <span class="file-size">94 MB • APK Release v2.1.0</span>
+                            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/raw/main/app_player-release.apk" class="btn btn-primary btn-full">
+                                <i class="fa-solid fa-download"></i> Download Player APK
+                            </a>
+                        </div>
+
+                        <div class="download-card glass-panel">
+                            <div class="card-icon"><i class="fa-solid fa-server"></i></div>
+                            <h3>Android Local Proxy</h3>
+                            <p>Foreground Service hosting embedded Ktor server (`http://127.0.0.1:8080`) with real-time 302 HTTP redirects to fastest stream endpoints.</p>
+                            <span class="file-size">2.3 MB • APK Release v2.1.0</span>
+                            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/raw/main/app_proxy-release.apk" class="btn btn-accent btn-full">
+                                <i class="fa-solid fa-download"></i> Download Proxy APK
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: PROXY GATEWAY -->
+            <section id="tab-proxy" class="tab-content">
+                <div class="hero-card glass-card">
+                    <h2 class="gradient-title"><i class="fa-solid fa-network-wired"></i> Local Proxy Mesh & Endpoint</h2>
+                    <p>Integrate your favorite IPTV application (TiviMate, OTT Navigator, Smarters) with our zero-latency local proxy engine.</p>
+
+                    <div class="endpoint-box glass-panel">
+                        <div class="endpoint-label">Local M3U Proxy Endpoint</div>
+                        <div class="endpoint-url">
+                            <code>http://127.0.0.1:8080/live.m3u</code>
+                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('http://127.0.0.1:8080/live.m3u')">
+                                <i class="fa-solid fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="endpoint-box glass-panel">
+                        <div class="endpoint-label">Xtream Codes Emulation Login</div>
+                        <div class="endpoint-url">
+                            <code>Server: http://127.0.0.1:8080 | User: allinone | Pass: iptv</code>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: PLAYLISTS -->
+            <section id="tab-playlists" class="tab-content">
+                <div class="hero-card glass-card">
+                    <h2 class="gradient-title"><i class="fa-solid fa-list-check"></i> Raw Playlist Feeds</h2>
+                    <p>Auto-updated every 6 hours via GitHub Actions background cron scraper.</p>
+
+                    <div class="feed-list">
+                        <div class="feed-item glass-panel">
+                            <div>
+                                <h4>Checked & Verified Playlist (100% Alive)</h4>
+                                <p>97,547 verified channels with active HTTP HEAD responses.</p>
+                            </div>
+                            <a href="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/checked_combined_by_country.m3u" target="_blank" class="btn btn-primary">
+                                Raw Link
+                            </a>
+                        </div>
+
+                        <div class="feed-item glass-panel">
+                            <div>
+                                <h4>Full Combined Master Playlist</h4>
+                                <p>154,554 channels grouped by country and deduplicated.</p>
+                            </div>
+                            <a href="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/combined_by_country.m3u" target="_blank" class="btn btn-secondary">
+                                Raw Link
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: DOCS -->
+            <section id="tab-docs" class="tab-content">
+                <div class="hero-card glass-card">
+                    <h2 class="gradient-title"><i class="fa-solid fa-book-open"></i> Architecture & Quick Start</h2>
+                    <div class="docs-body">
+                        <h3>Local Pipeline Execution</h3>
+                        <pre><code>python3 -m engine.src.main</code></pre>
+                        <h3>Unit Test Suite Verification</h3>
+                        <pre><code>python3 -m unittest discover -s engine/tests</code></pre>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <nav id="navbar">
-        <div class="logo">ALL-IN-ONE IPTV</div>
-        <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="#download">Download</a>
-            <a href="/ALL-IN-One-IPTV/docs/">Docs</a>
-            <a href="/ALL-IN-One-IPTV/player/web/">Web Player</a>
-            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV" target="_blank">GitHub</a>
-        </div>
-    </nav>
-
-    <section class="hero">
-        <h1>Next-Gen <br><span style="background: linear-gradient(to right, #4318ff, #ff2a5f); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">IPTV Experience</span></h1>
-        <p>A completely open-source, auto-updating, and stunningly beautiful IPTV ecosystem. Thousands of channels, perfectly organized.</p>
-        
-        <div class="hero-buttons">
-            <a href="/ALL-IN-One-IPTV/player/web/" class="btn btn-primary">
-                Launch Web Player
-            </a>
-            <a href="#download" class="btn btn-secondary">
-                Download M3U
-            </a>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card glass">
-                <h3 id="stat-channels">12,500+</h3>
-                <p>Live Channels</p>
-            </div>
-            <div class="stat-card glass">
-                <h3 id="stat-countries">195</h3>
-                <p>Countries</p>
-            </div>
-            <div class="stat-card glass">
-                <h3 id="stat-uptime">99.9%</h3>
-                <p>Uptime</p>
+    <!-- PIN Unlock Modal -->
+    <div class="modal-overlay" id="pinModal">
+        <div class="modal-card glass-card">
+            <h3><i class="fa-solid fa-shield-halved"></i> Parental Control PIN Verification</h3>
+            <p>Enter System PIN to unlock adult/explicit content streams.</p>
+            <input type="password" id="pinInput" placeholder="Enter PIN (e.g. 0171)" maxlength="4">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closePinModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="verifyPin()">Unlock</button>
             </div>
         </div>
-    </section>
+    </div>
 
-    <section id="features" class="section">
-        <h2 class="section-title">Why Choose Us?</h2>
-        <div class="features-grid">
-            <div class="feature-card glass">
-                <div class="feature-icon">🚀</div>
-                <h3>Auto-Updating</h3>
-                <p>Playlists are automatically validated and updated daily using GitHub Actions. No more dead links.</p>
-            </div>
-            <div class="feature-card glass">
-                <div class="feature-icon">📺</div>
-                <h3>Modern Web Player</h3>
-                <p>A Netflix-style premium web player with HLS.js, EPG support, and Picture-in-Picture.</p>
-            </div>
-            <div class="feature-card glass">
-                <div class="feature-icon">🔒</div>
-                <h3>Free & Open Source</h3>
-                <p>100% community driven. No hidden fees, no trackers, completely transparent.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" id="download">
-        <h2 class="section-title">Get the Playlist</h2>
-        <div class="arch-container glass">
-            <p>Use this URL in your favorite IPTV player (VLC, TiviMate, etc.):</p>
-            <div class="code-block">
-                https://shoumikbalasomu.github.io/ALL-IN-One-IPTV/playlist.m3u
-            </div>
-            <br>
-            <a href="#" class="btn btn-primary">Download .m3u File</a>
-        </div>
-    </section>
-
-    <footer>
-        <p>&copy; 2026 ALL-IN-ONE IPTV. Created by ShoumikBalaSomu.</p>
-    </footer>
-
-    <script>
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                nav.classList.add('scrolled');
-            } else {
-                nav.classList.remove('scrolled');
-            }
-        });
-
-        // Simple number counter animation
-        function animateValue(obj, start, end, duration) {
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString() + "+";
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
-
-        // Trigger animation on load
-        window.onload = () => {
-            const channels = document.getElementById('stat-channels');
-            animateValue(channels, 0, 15000, 2000);
-        };
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>

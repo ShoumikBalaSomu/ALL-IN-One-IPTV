@@ -3,35 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALL-IN-ONE IPTV Docs</title>
+    <title>ALL-IN-One IPTV — World-Class Ecosystem & Web Player</title>
+    <meta name="description" content="Ultimate open-source cross-platform IPTV ecosystem with auto-updating channels, smart stream fallback, and high-performance native players.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HLS.js Video Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="layout">
-        <aside class="sidebar glass">
-            <h2>IPTV Docs</h2>
-            <nav>
-                <a href="#intro" class="active">Introduction</a>
-                <a href="#install">Installation</a>
-                <a href="#api">API Reference</a>
-                <a href="#contributing">Contributing</a>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-panel">
+            <div class="brand">
+                <img src="assets/app_icon.png" alt="Logo" class="brand-logo" onerror="this.src='../screenshot.png'">
+                <div class="brand-text">
+                    <span class="brand-title">ALL-IN-ONE</span>
+                    <span class="brand-subtitle">IPTV ECOSYSTEM</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="player">
+                    <i class="fa-solid fa-play"></i> <span>Web Player</span>
+                </button>
+                <button class="nav-item" data-tab="downloads">
+                    <i class="fa-solid fa-download"></i> <span>Downloads</span>
+                </button>
+                <button class="nav-item" data-tab="proxy">
+                    <i class="fa-solid fa-network-wired"></i> <span>Proxy Gateway</span>
+                </button>
+                <button class="nav-item" data-tab="playlists">
+                    <i class="fa-solid fa-list-check"></i> <span>Playlists & Feeds</span>
+                </button>
+                <button class="nav-item" data-tab="docs">
+                    <i class="fa-solid fa-book-open"></i> <span>Documentation</span>
+                </button>
             </nav>
+
+            <div class="system-status-box glass-card">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span class="status-text">Engine Alive</span>
+                </div>
+                <div class="status-meta">97,547 Channels Verified</div>
+            </div>
         </aside>
-        
-        <main class="content">
-            <section id="intro">
-                <h1>ALL-IN-ONE IPTV Documentation</h1>
-                <p>Welcome to the official documentation. This project aims to provide the best open-source IPTV ecosystem.</p>
+
+        <!-- Main Content View -->
+        <main class="main-content">
+            <!-- Header Bar -->
+            <header class="top-header glass-panel">
+                <div class="header-search">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="channelSearch" placeholder="Search 200,000+ channels by name, country, or 4K/FHD resolution..." />
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-icon" id="pinUnlockBtn" title="Parental Controls (PIN 0171)">
+                        <i class="fa-solid fa-lock"></i> <span id="pinStatusText">PIN Locked</span>
+                    </button>
+                    <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV" target="_blank" class="btn btn-primary">
+                        <i class="fa-brands fa-github"></i> <span>GitHub Repo</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- TAB 1: WEB PLAYER -->
+            <section id="tab-player" class="tab-content active">
+                <div class="player-grid">
+                    <!-- Video Stage -->
+                    <div class="video-container glass-card">
+                        <video id="videoPlayer" controls autoplay poster="assets/app_icon.png"></video>
+                        <div class="video-overlay-info" id="currentStreamInfo">
+                            <span class="badge badge-live">LIVE</span>
+                            <span class="stream-title" id="activeStreamTitle">Select a channel from playlist</span>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Channel List -->
+                    <div class="playlist-sidebar glass-card">
+                        <div class="playlist-header">
+                            <h3>Live TV Guide</h3>
+                            <span class="badge badge-accent" id="channelCountBadge">0 Channels</span>
+                        </div>
+
+                        <!-- Category Filters -->
+                        <div class="category-scroll" id="categoryChips">
+                            <button class="chip active" data-group="all">All</button>
+                            <button class="chip" data-group="Bangladesh">Bangladesh</button>
+                            <button class="chip" data-group="India">India</button>
+                            <button class="chip" data-group="United States">USA</button>
+                            <button class="chip" data-group="Sports">Sports</button>
+                            <button class="chip" data-group="Movies">Movies</button>
+                            <button class="chip" data-group="News">News</button>
+                            <button class="chip" data-group="4K">4K Ultra HD</button>
+                        </div>
+
+                        <!-- Channel Scroll List -->
+                        <div class="channel-list" id="channelListContainer">
+                            <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading Channels...</div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <section id="install">
-                <h2>Installation</h2>
-                <div class="code-block glass">
-                    <code>git clone https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV.git</code>
+            <!-- TAB 2: DOWNLOADS -->
+            <section id="tab-downloads" class="tab-content">
+                <div class="hero-card glass-card">
+                    <h1 class="gradient-title">Download Production Applications</h1>
+                    <p class="hero-subtitle">Cross-platform native media players & local Android proxies built for zero latency, hardware acceleration, and smart stream fallback.</p>
+                    
+                    <div class="download-grid">
+                        <div class="download-card glass-panel">
+                            <div class="card-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                            <h3>Flutter Unified Player</h3>
+                            <p>Full-featured cross-platform player with Glassmorphism mesh UI, EPG TV guide, Netflix-style VOD, and libVLC hardware acceleration.</p>
+                            <span class="file-size">94 MB • APK Release v2.1.0</span>
+                            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/raw/main/app_player-release.apk" class="btn btn-primary btn-full">
+                                <i class="fa-solid fa-download"></i> Download Player APK
+                            </a>
+                        </div>
+
+                        <div class="download-card glass-panel">
+                            <div class="card-icon"><i class="fa-solid fa-server"></i></div>
+                            <h3>Android Local Proxy</h3>
+                            <p>Foreground Service hosting embedded Ktor server (`http://127.0.0.1:8080`) with real-time 302 HTTP redirects to fastest stream endpoints.</p>
+                            <span class="file-size">2.3 MB • APK Release v2.1.0</span>
+                            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/raw/main/app_proxy-release.apk" class="btn btn-accent btn-full">
+                                <i class="fa-solid fa-download"></i> Download Proxy APK
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: PROXY GATEWAY -->
+            <section id="tab-proxy" class="tab-content">
+                <div class="hero-card glass-card">
+                    <h2 class="gradient-title"><i class="fa-solid fa-network-wired"></i> Local Proxy Mesh & Endpoint</h2>
+                    <p>Integrate your favorite IPTV application (TiviMate, OTT Navigator, Smarters) with our zero-latency local proxy engine.</p>
+
+                    <div class="endpoint-box glass-panel">
+                        <div class="endpoint-label">Local M3U Proxy Endpoint</div>
+                        <div class="endpoint-url">
+                            <code>http://127.0.0.1:8080/live.m3u</code>
+                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('http://127.0.0.1:8080/live.m3u')">
+                                <i class="fa-solid fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="endpoint-box glass-panel">
+                        <div class="endpoint-label">Xtream Codes Emulation Login</div>
+                        <div class="endpoint-url">
+                            <code>Server: http://127.0.0.1:8080 | User: allinone | Pass: iptv</code>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: PLAYLISTS -->
+            <section id="tab-playlists" class="tab-content">
+                <div class="hero-card glass-card">
+                    <h2 class="gradient-title"><i class="fa-solid fa-list-check"></i> Raw Playlist Feeds</h2>
+                    <p>Auto-updated every 6 hours via GitHub Actions background cron scraper.</p>
+
+                    <div class="feed-list">
+                        <div class="feed-item glass-panel">
+                            <div>
+                                <h4>Checked & Verified Playlist (100% Alive)</h4>
+                                <p>97,547 verified channels with active HTTP HEAD responses.</p>
+                            </div>
+                            <a href="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/checked_combined_by_country.m3u" target="_blank" class="btn btn-primary">
+                                Raw Link
+                            </a>
+                        </div>
+
+                        <div class="feed-item glass-panel">
+                            <div>
+                                <h4>Full Combined Master Playlist</h4>
+                                <p>154,554 channels grouped by country and deduplicated.</p>
+                            </div>
+                            <a href="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/combined_by_country.m3u" target="_blank" class="btn btn-secondary">
+                                Raw Link
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: DOCS -->
+            <section id="tab-docs" class="tab-content">
+                <div class="hero-card glass-card">
+                    <h2 class="gradient-title"><i class="fa-solid fa-book-open"></i> Architecture & Quick Start</h2>
+                    <div class="docs-body">
+                        <h3>Local Pipeline Execution</h3>
+                        <pre><code>python3 -m engine.src.main</code></pre>
+                        <h3>Unit Test Suite Verification</h3>
+                        <pre><code>python3 -m unittest discover -s engine/tests</code></pre>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
+
+    <!-- PIN Unlock Modal -->
+    <div class="modal-overlay" id="pinModal">
+        <div class="modal-card glass-card">
+            <h3><i class="fa-solid fa-shield-halved"></i> Parental Control PIN Verification</h3>
+            <p>Enter System PIN to unlock adult/explicit content streams.</p>
+            <input type="password" id="pinInput" placeholder="Enter PIN (e.g. 0171)" maxlength="4">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closePinModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="verifyPin()">Unlock</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

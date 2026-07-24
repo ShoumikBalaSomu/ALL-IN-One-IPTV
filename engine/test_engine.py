@@ -1,5 +1,10 @@
 import unittest
 import asyncio
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(__file__))
+
 from src.parser import parse_m3u, Stream
 from src.deduplicator import deduplicate
 
