@@ -19,7 +19,12 @@ class LocalKtorServer(private val context: Context) {
         server = embeddedServer(Netty, port = 8080, host = "127.0.0.1") {
             routing {
                 
-                // Serve the dynamic Master M3U playlist pointing to the proxy
+                // Expose dynamic M3U playlists pointing to the proxy
+                get("/live.m3u") {
+                    val m3uContent = generateLocalM3u()
+                    call.respondText(m3uContent, io.ktor.http.ContentType.Text.Plain)
+                }
+
                 get("/master.m3u") {
                     val m3uContent = generateLocalM3u()
                     call.respondText(m3uContent, io.ktor.http.ContentType.Text.Plain)
@@ -29,13 +34,10 @@ class LocalKtorServer(private val context: Context) {
                 get("/play/{channelId}") {
                     val channelId = call.parameters["channelId"]
                     if (channelId != null) {
-                        // In a real app, you would query the Room DB here using channelId
-                        // val fallbackUrls = db.channelDao().getFallbackUrls(channelId)
-                        
-                        // Mocking folded streams for the scaffold:
+                        // Mocking folded streams (in production this queries Room DB)
                         val fallbackUrls = listOf(
                             "http://example.com/dead_stream.m3u8",
-                            "http://202.70.146.135:8000/playlist.m3u", // Assuming this is alive
+                            "http://202.70.146.135:8000/playlist.m3u", // Mock alive stream
                             "http://example.com/another_dead.ts"
                         )
 
@@ -63,10 +65,10 @@ class LocalKtorServer(private val context: Context) {
 
     private suspend fun generateLocalM3u(): String = withContext(Dispatchers.IO) {
         // Query Room DB for folded channels and generate M3U on the fly
-        // Each channel's URL should be transformed to: http://127.0.0.1:8080/play/{id}
+        // Each channel's URL is transformed to point to the local proxy
         """
         #EXTM3U
-        #EXTINF:-1 tvg-id="test" tvg-logo="test.png" group-title="Test",Folded Channel 1
+        #EXTINF:-1 tvg-id="test" tvg-logo="test.png" group-title="Test",Proxy Channel 1
         http://127.0.0.1:8080/play/channel_1
         """.trimIndent()
     }

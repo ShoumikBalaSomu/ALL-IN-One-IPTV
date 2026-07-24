@@ -1,6 +1,7 @@
 package com.iptv.proxy.server
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
@@ -15,30 +16,38 @@ class StreamChecker {
 
     /**
      * Rapidly pings multiple fallback URLs concurrently.
-     * Returns the first URL that responds with an HTTP 2xx or 3xx status.
+     * Returns the first URL that responds with an HTTP 2xx or 3xx status instantly.
      */
     suspend fun findFastestAliveStream(urls: List<String>): String? = coroutineScope {
         if (urls.isEmpty()) return@coroutineScope null
         if (urls.size == 1) return@coroutineScope urls.first() // Fast path
 
-        val deferredResults = urls.map { url ->
-            async(Dispatchers.IO) {
-                checkUrl(url)
+        val resultChannel = Channel<String?>(Channel.CONFLATED)
+
+        // Launch all checks concurrently
+        val jobs = urls.map { url ->
+            launch(Dispatchers.IO) {
+                val isAlive = checkUrl(url)
+                if (isAlive != null) {
+                    // Instantly push the first successful result
+                    resultChannel.trySend(isAlive)
+                }
             }
         }
 
-        // Wait for the fastest successful response, ignoring failures until all finish
-        for (deferred in deferredResults) {
-            val resultUrl = deferred.await()
-            if (resultUrl != null) {
-                // Cancel remaining requests to save bandwidth and battery
-                coroutineContext.cancelChildren()
-                return@coroutineScope resultUrl
-            }
+        // A fallback coroutine to close the channel when all jobs finish failing
+        launch {
+            jobs.joinAll()
+            resultChannel.trySend(null)
         }
 
-        // All failed
-        null
+        // Wait for the absolutely first message in the channel
+        val fastestUrl = resultChannel.receive()
+
+        // Cancel all pending network requests since we already found a winner
+        coroutineContext.cancelChildren()
+
+        return@coroutineScope fastestUrl
     }
 
     private fun checkUrl(url: String): String? {

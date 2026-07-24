@@ -9,7 +9,7 @@ class LanMeshRouter {
     
     private var jmdns: JmDNS? = null
     private val activeStreams = mutableMapOf<String, String>() // ChannelID -> Master Node IP
-    private val localIp: String = InetAddress.getLocalHost().hostAddress
+    private val localIp: String = InetAddress.getLocalHost().hostAddress ?: "127.0.0.1"
 
     fun initializeDiscovery() {
         CoroutineScope(Dispatchers.IO).launch {
