@@ -5,6 +5,7 @@ Tests for the IPTV Engine.
 import unittest
 import sys
 import os
+import tempfile
 
 # Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -17,6 +18,7 @@ from engine.src.utils import (
     sanitize_text,
 )
 from engine.src.parser import M3UParser
+from engine.src.encryption import encrypt_playlist, decrypt_playlist, generate_key
 
 
 class TestUtils(unittest.TestCase):
@@ -102,6 +104,42 @@ http://example.com/ch.m3u8
         ]
         channels = self.parser.parse_all(sources)
         self.assertEqual(len(channels), 2)
+
+
+class TestEncryption(unittest.TestCase):
+    """Test AES encryption/decryption module."""
+
+    def test_generate_key(self):
+        key = generate_key()
+        self.assertEqual(len(key), 64)
+
+    def test_encrypt_decrypt_cycle(self):
+        key = generate_key()
+        content = b"#EXTM3U\n#EXTINF:-1,Test Channel\nhttp://example.com/test.m3u8\n"
+        
+        with tempfile.NamedTemporaryFile(suffix='.m3u', delete=False) as f_in, \
+             tempfile.NamedTemporaryFile(suffix='.enc', delete=False) as f_enc, \
+             tempfile.NamedTemporaryFile(suffix='.m3u', delete=False) as f_out:
+            
+            f_in.write(content)
+            f_in.close()
+            f_enc.close()
+            f_out.close()
+            
+            try:
+                enc_res = encrypt_playlist(f_in.name, f_enc.name, key)
+                self.assertIsNotNone(enc_res)
+                
+                dec_res = decrypt_playlist(f_enc.name, f_out.name, key)
+                self.assertIsNotNone(dec_res)
+                
+                with open(f_out.name, 'rb') as f:
+                    decrypted_content = f.read()
+                    self.assertEqual(decrypted_content, content)
+            finally:
+                os.remove(f_in.name)
+                os.remove(f_enc.name)
+                os.remove(f_out.name)
 
 
 if __name__ == "__main__":
