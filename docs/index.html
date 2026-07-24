@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALL-IN-One IPTV — World-Class Ecosystem & Web Player</title>
-    <meta name="description" content="Ultimate open-source cross-platform IPTV ecosystem with auto-updating channels, smart stream fallback, and high-performance native players.">
+    <title>ALL-IN-One IPTV — AGI-Era Cyber Portal & Web Player</title>
+    <meta name="description" content="Next-generation AGI-Era open-source IPTV ecosystem featuring neural stream health diagnostics, smart fallback matrix, and cyber-glow Glassmorphic UI.">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- HLS.js Video Engine -->
@@ -16,41 +16,48 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- AGI Particle Matrix Background Canvas -->
+    <canvas id="agiMatrixCanvas"></canvas>
+
     <div class="app-container">
-        <!-- Sidebar Navigation -->
+        <!-- Cyber Sidebar Navigation -->
         <aside class="sidebar glass-panel">
             <div class="brand">
                 <img src="assets/app_icon.png" alt="Logo" class="brand-logo" onerror="this.src='../screenshot.png'">
                 <div class="brand-text">
                     <span class="brand-title">ALL-IN-ONE</span>
-                    <span class="brand-subtitle">IPTV ECOSYSTEM</span>
+                    <span class="brand-subtitle">AGI IPTV EMPIRE</span>
                 </div>
             </div>
 
             <nav class="nav-menu">
                 <button class="nav-item active" data-tab="player">
-                    <i class="fa-solid fa-play"></i> <span>Web Player</span>
+                    <i class="fa-solid fa-play"></i> <span>Neural Web Player</span>
                 </button>
                 <button class="nav-item" data-tab="downloads">
-                    <i class="fa-solid fa-download"></i> <span>Downloads</span>
+                    <i class="fa-solid fa-download"></i> <span>Apps & Binaries</span>
                 </button>
                 <button class="nav-item" data-tab="proxy">
-                    <i class="fa-solid fa-network-wired"></i> <span>Proxy Gateway</span>
+                    <i class="fa-solid fa-network-wired"></i> <span>Ktor Local Mesh</span>
                 </button>
                 <button class="nav-item" data-tab="playlists">
-                    <i class="fa-solid fa-list-check"></i> <span>Playlists & Feeds</span>
+                    <i class="fa-solid fa-list-check"></i> <span>Feeds & Fallbacks</span>
                 </button>
                 <button class="nav-item" data-tab="docs">
-                    <i class="fa-solid fa-book-open"></i> <span>Documentation</span>
+                    <i class="fa-solid fa-book-open"></i> <span>Architecture & API</span>
                 </button>
             </nav>
 
-            <div class="system-status-box glass-card">
+            <div class="system-status-box glass-card glow-cyan">
                 <div class="status-indicator">
                     <span class="pulse-dot"></span>
-                    <span class="status-text">Engine Alive</span>
+                    <span class="status-text">AGI CORE 4.0 ALIVE</span>
                 </div>
-                <div class="status-meta">97,547 Channels Verified</div>
+                <div class="status-meta">97,547 Streams Verified (500 Workers)</div>
+                <div class="hud-mini-stats">
+                    <span>Latency: <strong id="hudLatency">14ms</strong></span>
+                    <span>Host Health: <strong id="hudHealth">99.8%</strong></span>
+                </div>
             </div>
         </aside>
 
@@ -66,7 +73,7 @@
                     <button class="btn btn-secondary btn-icon" id="pinUnlockBtn" title="Parental Controls (PIN 0171)">
                         <i class="fa-solid fa-lock"></i> <span id="pinStatusText">PIN Locked</span>
                     </button>
-                    <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV" target="_blank" class="btn btn-primary">
+                    <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV" target="_blank" class="btn btn-primary glow-button">
                         <i class="fa-brands fa-github"></i> <span>GitHub Repo</span>
                     </a>
                 </div>
@@ -79,15 +86,19 @@
                     <div class="video-container glass-card">
                         <video id="videoPlayer" controls autoplay poster="assets/app_icon.png"></video>
                         <div class="video-overlay-info" id="currentStreamInfo">
-                            <span class="badge badge-live">LIVE</span>
+                            <span class="badge badge-live"><i class="fa-solid fa-circle-dot"></i> AGI LIVE</span>
                             <span class="stream-title" id="activeStreamTitle">Select a channel from playlist</span>
+                        </div>
+                        <div class="video-hud-overlay" id="hudOverlay">
+                            <div class="hud-tag"><i class="fa-solid fa-bolt"></i> Fast Failover Active</div>
+                            <div class="hud-tag"><i class="fa-solid fa-microchip"></i> HLS.js Hardware Engine</div>
                         </div>
                     </div>
 
                     <!-- Sidebar Channel List -->
                     <div class="playlist-sidebar glass-card">
                         <div class="playlist-header">
-                            <h3>Live TV Guide</h3>
+                            <h3 class="cyber-title">Neural TV Guide</h3>
                             <span class="badge badge-accent" id="channelCountBadge">0 Channels</span>
                         </div>
 
@@ -105,7 +116,7 @@
 
                         <!-- Channel Scroll List -->
                         <div class="channel-list" id="channelListContainer">
-                            <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading Channels...</div>
+                            <div class="loading-spinner"><i class="fa-solid fa-atom fa-spin"></i> Initializing Neural Matrix...</div>
                         </div>
                     </div>
                 </div>
@@ -113,27 +124,27 @@
 
             <!-- TAB 2: DOWNLOADS -->
             <section id="tab-downloads" class="tab-content">
-                <div class="hero-card glass-card">
-                    <h1 class="gradient-title">Download Production Applications</h1>
-                    <p class="hero-subtitle">Cross-platform native media players & local Android proxies built for zero latency, hardware acceleration, and smart stream fallback.</p>
+                <div class="hero-card glass-card glow-purple">
+                    <h1 class="gradient-title">AGI-Era Production Applications</h1>
+                    <p class="hero-subtitle">Cross-platform native media players & local Android proxies built with modern Glassmorphism, 1.5s smart fallback, and zero-latency hardware acceleration.</p>
                     
                     <div class="download-grid">
-                        <div class="download-card glass-panel">
+                        <div class="download-card glass-panel glow-cyan">
                             <div class="card-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
                             <h3>Flutter Unified Player</h3>
                             <p>Full-featured cross-platform player with Glassmorphism mesh UI, EPG TV guide, Netflix-style VOD, and libVLC hardware acceleration.</p>
                             <span class="file-size">94 MB • APK Release v2.1.0</span>
-                            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/raw/main/app_player-release.apk" class="btn btn-primary btn-full">
+                            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/raw/main/app_player-release.apk" class="btn btn-primary btn-full glow-button">
                                 <i class="fa-solid fa-download"></i> Download Player APK
                             </a>
                         </div>
 
-                        <div class="download-card glass-panel">
+                        <div class="download-card glass-panel glow-red">
                             <div class="card-icon"><i class="fa-solid fa-server"></i></div>
-                            <h3>Android Local Proxy</h3>
+                            <h3>Android Local Proxy Engine</h3>
                             <p>Foreground Service hosting embedded Ktor server (`http://127.0.0.1:8080`) with real-time 302 HTTP redirects to fastest stream endpoints.</p>
                             <span class="file-size">2.3 MB • APK Release v2.1.0</span>
-                            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/raw/main/app_proxy-release.apk" class="btn btn-accent btn-full">
+                            <a href="https://github.com/ShoumikBalaSomu/ALL-IN-One-IPTV/raw/main/app_proxy-release.apk" class="btn btn-accent btn-full glow-button">
                                 <i class="fa-solid fa-download"></i> Download Proxy APK
                             </a>
                         </div>
@@ -144,10 +155,10 @@
             <!-- TAB 3: PROXY GATEWAY -->
             <section id="tab-proxy" class="tab-content">
                 <div class="hero-card glass-card">
-                    <h2 class="gradient-title"><i class="fa-solid fa-network-wired"></i> Local Proxy Mesh & Endpoint</h2>
+                    <h2 class="gradient-title"><i class="fa-solid fa-network-wired"></i> Local Ktor Mesh & Redirect Engine</h2>
                     <p>Integrate your favorite IPTV application (TiviMate, OTT Navigator, Smarters) with our zero-latency local proxy engine.</p>
 
-                    <div class="endpoint-box glass-panel">
+                    <div class="endpoint-box glass-panel glow-cyan">
                         <div class="endpoint-label">Local M3U Proxy Endpoint</div>
                         <div class="endpoint-url">
                             <code>http://127.0.0.1:8080/live.m3u</code>
@@ -157,7 +168,7 @@
                         </div>
                     </div>
 
-                    <div class="endpoint-box glass-panel">
+                    <div class="endpoint-box glass-panel glow-purple">
                         <div class="endpoint-label">Xtream Codes Emulation Login</div>
                         <div class="endpoint-url">
                             <code>Server: http://127.0.0.1:8080 | User: allinone | Pass: iptv</code>
@@ -173,17 +184,17 @@
                     <p>Auto-updated every 6 hours via GitHub Actions background cron scraper.</p>
 
                     <div class="feed-list">
-                        <div class="feed-item glass-panel">
+                        <div class="feed-item glass-panel glow-cyan">
                             <div>
                                 <h4>Checked & Verified Playlist (100% Alive)</h4>
-                                <p>97,547 verified channels with active HTTP HEAD responses.</p>
+                                <p>97,547 verified channels with active HTTP HEAD responses and latency fallback headers.</p>
                             </div>
-                            <a href="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/checked_combined_by_country.m3u" target="_blank" class="btn btn-primary">
+                            <a href="https://raw.githubusercontent.com/ShoumikBalaSomu/ALL-IN-One-IPTV/main/output/checked_combined_by_country.m3u" target="_blank" class="btn btn-primary glow-button">
                                 Raw Link
                             </a>
                         </div>
 
-                        <div class="feed-item glass-panel">
+                        <div class="feed-item glass-panel glow-purple">
                             <div>
                                 <h4>Full Combined Master Playlist</h4>
                                 <p>154,554 channels grouped by country and deduplicated.</p>
@@ -213,13 +224,13 @@
 
     <!-- PIN Unlock Modal -->
     <div class="modal-overlay" id="pinModal">
-        <div class="modal-card glass-card">
+        <div class="modal-card glass-card glow-cyan">
             <h3><i class="fa-solid fa-shield-halved"></i> Parental Control PIN Verification</h3>
             <p>Enter System PIN to unlock adult/explicit content streams.</p>
             <input type="password" id="pinInput" placeholder="Enter PIN (e.g. 0171)" maxlength="4">
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closePinModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="verifyPin()">Unlock</button>
+                <button class="btn btn-primary glow-button" onclick="verifyPin()">Unlock</button>
             </div>
         </div>
     </div>
