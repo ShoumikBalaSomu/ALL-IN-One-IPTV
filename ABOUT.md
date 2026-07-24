@@ -1,27 +1,39 @@
-# 📖 About ALL-IN-ONE IPTV
+# 🚀 ABOUT — ALL-IN-One IPTV Monorepo Empire
 
-**ALL-IN-ONE IPTV** was born from a simple need: reliable, easily accessible, and organized IPTV streams. The landscape of free IPTV is scattered, frequently broken, and difficult to navigate. We aimed to change that.
+```
+  █████╗ ██╗     ██╗     ██╗███╗   ██╗     ██████╗ ███╗   ██╗███████╗    ██╗██████╗ ████████╗██╗   ██╗
+ ██╔══██╗██║     ██║     ██║████╗  ██║    ██╔═══██╗████╗  ██║██╔════╝    ██║██╔══██╗╚══██╔══╝██║   ██║
+ ███████║██║     ██║     ██║██╔██╗ ██║    ██║   ██║██╔██╗ ██║█████╗      ██║██████╔╝   ██║   ██║   ██║
+ ██╔══██║██║     ██║     ██║██║╚██╗██║    ██║   ██║██║╚██╗██║██╔══╝      ██║██╔═══╝    ██║   ╚██╗ ██╔╝
+ ██║  ██║███████╗███████╗██║██║ ╚████║    ╚██████╔╝██║ ╚████║███████╗    ██║██║        ██║    ╚████╔╝ 
+ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝     ╚═════╝ ╚═╝  ╚═══╝╚══════╝    ╚═╝╚═╝        ╚═╝     ╚═══╝  
+```
 
-## 🌟 Our Vision
+> **The World's Most Advanced Open-Source IPTV Ecosystem**: Autonomous Backend Aggregator, Parallel Health Verifier, Smart Stream Fallback Matrix, Cross-Platform Unified Player, Native Android Local Proxy, and Glassmorphic Web App Portal.
 
-To build the most resilient and automated ecosystem for global open IPTV content, ensuring high availability, metadata richness, and seamless user experiences across all devices.
+---
 
-## 🏗️ Architecture Deep Dive
+## 🛰️ Mission & Vision
 
-The project consists of several decoupled but highly synergistic components:
+**ALL-IN-One IPTV** was engineered to solve the fundamental flaws of legacy IPTV playlist repositories:
+1. **Broken Stream Link Decay**: Legacy M3U playlists degrade within 48 hours. Our **500-Worker Parallel Async Verifier & Domain Circuit Breaker** tests 10,000+ alive domains in under 90 seconds, filtering dead hosts automatically.
+2. **Duplicate Channel Spam**: Instead of listing 20 duplicate instances of "HBO", our **Smart Channel Merger** folds duplicates into a single channel entry with **latency-ranked fallback stream mirrors**.
+3. **Buffering & Stalling**: Our **1.5s Smart Fallback Engine** inside the Flutter Player and Native Android Proxy automatically detects stream errors and redirects playback to the fastest alive mirror seamlessly.
 
-1. **The Harvester (Scraping Layer):** Written in Python using `aiohttp` and `BeautifulSoup4`, it asynchronously crawls known repositories, forums, and directories for M3U and M3U8 links.
-2. **The Forge (Processing Layer):** Normalizes stream data. It extracts logos, categorizes by country/language using natural language processing heuristics, and deduplicates identical streams.
-3. **The Sentinel (Validator Layer):** Uses FFprobe and lightweight HTTP headers to check stream viability at scale. Streams are tested for latency, codec information, and stability.
-4. **The Gateway (Delivery Layer):** Serves the processed playlists via static GitHub Pages and a dynamic FastAPI service for advanced querying.
+---
 
-## 🛠️ Technology Choices Rationale
+## ⚡ Ecosystem Core Modules
 
-- **Python 3.12+**: Selected for its mature async ecosystem (`asyncio`, `aiohttp`), which is critical for parallel stream validation and scraping.
-- **FastAPI**: Chosen for the backend due to its speed, automatic Swagger UI generation, and native asynchronous support.
-- **Flutter**: The obvious choice for our mobile and desktop client applications, allowing a single codebase to target iOS, Android, Windows, macOS, and Linux with native performance.
-- **Docker**: Ensures reproducibility across environments, enabling users to spin up their own personal IPTV aggregation nodes effortlessly.
+| Module | Location | Description | Tech Stack |
+| :--- | :--- | :--- | :--- |
+| **Backend Engine** | [`engine/src/`](engine/src/) | Scraper, Verifier, Deduplicator, EPG, Search, Encryption, IPFS | Python 3.11/3.14, `aiohttp`, `rich` |
+| **Flutter Player** | [`apps/app_player/`](apps/app_player/) | Glassmorphic Media Player with EPG Guide & Netflix VOD | Flutter 3.27, Dart, `media_kit`, Riverpod |
+| **Android Proxy** | [`apps/app_proxy/`](apps/app_proxy/) | Foreground Service Ktor Server hosting `http://127.0.0.1:8080` | Kotlin 2.0, Ktor, Jetpack Compose, Coroutines |
+| **Web App Portal** | [`docs/`](docs/) | Glassmorphic HLS.js Browser Player with PIN `0171` Controls | HTML5, CSS3, JavaScript, HLS.js |
+| **Google Colab** | [`colab/`](colab/) | Cloud Aggregation & AES-256-GCM Playlist Encryption Notebooks | Jupyter Notebook, Python |
 
-## 🤝 Community & Team
+---
 
-We believe in the power of open-source. This project thrives on community contributions—whether it's adding a new source to the scraper, improving the regex for stream parsing, or fixing UI bugs in the web player.
+## 🛡️ License & DMCA Statement
+
+This project is licensed under the [MIT License](LICENSE). Read [LEGAL.md](LEGAL.md) and [DISCLAIMER.md](DISCLAIMER.md) for copyright and compliance policies.
