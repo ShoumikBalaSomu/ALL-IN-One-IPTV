@@ -22,6 +22,8 @@ from engine.src.encryption import encrypt_playlist, decrypt_playlist, generate_k
 from engine.src.epg_fetcher import EPGFetcher
 from engine.src.xtream_parser import XtreamParser
 from engine.src.torrent_bridge import TorrentStreamBridge
+from engine.src.search_engine import ChannelSearchEngine
+from engine.src.content_filter import ContentFilter
 
 
 class TestUtils(unittest.TestCase):
@@ -197,6 +199,45 @@ class TestTorrentBridge(unittest.TestCase):
 
         proxy_url = bridge.transform_to_http_proxy("acestream://1234567890abcdef")
         self.assertEqual(proxy_url, "http://127.0.0.1:8080/p2p/1234567890abcdef")
+
+
+class TestSearchEngine(unittest.TestCase):
+    """Test fuzzy channel search engine."""
+
+    def test_fuzzy_search(self):
+        channels = [
+            {'name': 'HBO HD USA', 'group': 'United States'},
+            {'name': 'BBC One UK', 'group': 'United Kingdom'},
+            {'name': 'ESPN 1080p', 'group': 'Sports'}
+        ]
+        engine = ChannelSearchEngine(channels)
+        results = engine.search("hbo")
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['name'], 'HBO HD USA')
+
+        results_group = engine.filter_by_country("United Kingdom")
+        self.assertEqual(len(results_group), 1)
+        self.assertEqual(results_group[0]['name'], 'BBC One UK')
+
+
+class TestContentFilter(unittest.TestCase):
+    """Test parental control content filter."""
+
+    def test_explicit_detection(self):
+        filter_engine = ContentFilter(system_pin="0171")
+        self.assertTrue(filter_engine.is_explicit({'name': 'Adult 18+ VIP', 'group': 'XXX'}))
+        self.assertFalse(filter_engine.is_explicit({'name': 'Discovery Channel', 'group': 'Documentary'}))
+
+        self.assertTrue(filter_engine.verify_pin("0171"))
+        self.assertFalse(filter_engine.verify_pin("1234"))
+
+        channels = [
+            {'name': 'Safe TV', 'group': 'News'},
+            {'name': 'Adult Movie 18+', 'group': 'XXX'}
+        ]
+        filtered = filter_engine.filter_channels(channels, pin_unlocked=False)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['name'], 'Safe TV')
 
 
 if __name__ == "__main__":
