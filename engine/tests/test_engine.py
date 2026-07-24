@@ -24,6 +24,8 @@ from engine.src.xtream_parser import XtreamParser
 from engine.src.torrent_bridge import TorrentStreamBridge
 from engine.src.search_engine import ChannelSearchEngine
 from engine.src.content_filter import ContentFilter
+from engine.src.quality_classifier import StreamQualityClassifier
+from engine.src.ipfs_publisher import IPFSPublisher
 
 
 class TestUtils(unittest.TestCase):
@@ -238,6 +240,33 @@ class TestContentFilter(unittest.TestCase):
         filtered = filter_engine.filter_channels(channels, pin_unlocked=False)
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0]['name'], 'Safe TV')
+
+
+class TestQualityClassifier(unittest.TestCase):
+    """Test resolution and framerate quality classifier."""
+
+    def test_quality_classification(self):
+        classifier = StreamQualityClassifier()
+        ch_4k = classifier.classify_channel({'name': 'Sky Sports 4K 60FPS', 'extinf': ''})
+        self.assertEqual(ch_4k['quality'], '4K')
+        self.assertTrue(ch_4k['is_60fps'])
+
+        ch_fhd = classifier.classify_channel({'name': 'HBO FHD 1080p', 'extinf': ''})
+        self.assertEqual(ch_fhd['quality'], 'FHD')
+
+
+class TestIPFSPublisher(unittest.TestCase):
+    """Test IPFS gateway resolution and URL formatting."""
+
+    def test_ipfs_formatting(self):
+        publisher = IPFSPublisher()
+        cid = "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco"
+        formatted = publisher.format_ipfs_url(cid)
+        self.assertTrue(formatted.startswith("https://"))
+        self.assertIn(cid, formatted)
+
+        gateways = publisher.get_all_gateway_urls(cid)
+        self.assertGreaterEqual(len(gateways), 3)
 
 
 if __name__ == "__main__":
