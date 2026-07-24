@@ -19,6 +19,9 @@ from engine.src.utils import (
 )
 from engine.src.parser import M3UParser
 from engine.src.encryption import encrypt_playlist, decrypt_playlist, generate_key
+from engine.src.epg_fetcher import EPGFetcher
+from engine.src.xtream_parser import XtreamParser
+from engine.src.torrent_bridge import TorrentStreamBridge
 
 
 class TestUtils(unittest.TestCase):
@@ -140,6 +143,60 @@ class TestEncryption(unittest.TestCase):
                 os.remove(f_in.name)
                 os.remove(f_enc.name)
                 os.remove(f_out.name)
+
+
+class TestEPGFetcher(unittest.TestCase):
+    """Test XMLTV EPG parser."""
+
+    def test_parse_epg_xml(self):
+        fetcher = EPGFetcher()
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<tv>
+  <programme start="20260724220000 +0000" stop="20260724230000 +0000" channel="bbc.uk">
+    <title>Late Night News</title>
+    <desc>Global news coverage</desc>
+  </programme>
+</tv>"""
+        programs = fetcher.parse_epg_programs(xml_content)
+        self.assertEqual(len(programs), 1)
+        self.assertEqual(programs[0]['title'], 'Late Night News')
+        self.assertEqual(programs[0]['channel_id'], 'bbc.uk')
+
+
+class TestXtreamParser(unittest.TestCase):
+    """Test Xtream Codes API parser."""
+
+    def test_convert_to_m3u_items(self):
+        parser = XtreamParser("http://xtream.server:8080", "user1", "pass1")
+        streams = [{
+            'stream_id': 101,
+            'name': 'HBO HD',
+            'category_id': '5',
+            'stream_icon': 'http://logo.png',
+            'container_extension': 'm3u8'
+        }]
+        categories = [{'category_id': 5, 'category_name': 'Movies'}]
+
+        items = parser.convert_to_m3u_items(streams, categories)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]['name'], 'HBO HD')
+        self.assertEqual(items[0]['group'], 'Movies')
+        self.assertEqual(items[0]['url'], 'http://xtream.server:8080/live/user1/pass1/101.m3u8')
+
+
+class TestTorrentBridge(unittest.TestCase):
+    """Test Torrent & Acestream P2P link bridge."""
+
+    def test_torrent_bridge(self):
+        bridge = TorrentStreamBridge(local_proxy_port=8080)
+        self.assertTrue(bridge.is_p2p_url("acestream://1234567890abcdef"))
+        self.assertTrue(bridge.is_p2p_url("magnet:?xt=urn:btih:abcdef1234567890"))
+        
+        infohash = bridge.extract_infohash("acestream://1234567890abcdef")
+        self.assertEqual(infohash, "1234567890abcdef")
+
+        proxy_url = bridge.transform_to_http_proxy("acestream://1234567890abcdef")
+        self.assertEqual(proxy_url, "http://127.0.0.1:8080/p2p/1234567890abcdef")
 
 
 if __name__ == "__main__":
