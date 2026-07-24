@@ -17,7 +17,7 @@ from engine.src.utils import (
     has_special_headers,
     sanitize_text,
 )
-from engine.src.parser import M3UParser
+from engine.src.parser import M3UParser, Stream
 from engine.src.encryption import encrypt_playlist, decrypt_playlist, generate_key
 from engine.src.epg_fetcher import EPGFetcher
 from engine.src.xtream_parser import XtreamParser
@@ -26,6 +26,7 @@ from engine.src.search_engine import ChannelSearchEngine
 from engine.src.content_filter import ContentFilter
 from engine.src.quality_classifier import StreamQualityClassifier
 from engine.src.ipfs_publisher import IPFSPublisher
+from engine.src.ai_healer import AIStreamHealer
 
 
 class TestUtils(unittest.TestCase):
@@ -267,6 +268,24 @@ class TestIPFSPublisher(unittest.TestCase):
 
         gateways = publisher.get_all_gateway_urls(cid)
         self.assertGreaterEqual(len(gateways), 3)
+
+
+class TestAIStreamHealer(unittest.TestCase):
+    """Test Year 3050 Quantum Stream Health Index Scoring."""
+
+    def test_quantum_score(self):
+        healer = AIStreamHealer()
+        s1 = Stream(url="https://hd.stream.tv/live.m3u8", name="High Quality Channel", latency_ms=50.0, tvg_logo="http://logo.png")
+        s2 = Stream(url="http://slow.stream.tv/stream", name="Slow Channel", latency_ms=800.0)
+
+        score1 = healer.compute_quantum_score(s1)
+        score2 = healer.compute_quantum_score(s2)
+
+        self.assertGreater(score1, score2)
+        self.assertGreaterEqual(score1, 70.0)
+
+        ranked = healer.rank_streams_by_quantum_score([s2, s1])
+        self.assertEqual(ranked[0].url, s1.url)
 
 
 if __name__ == "__main__":
