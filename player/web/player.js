@@ -1,73 +1,152 @@
-const video = document.getElementById('video');
-const channelList = document.getElementById('channelList');
-const search = document.getElementById('search');
-let hls;
-
-// Mock channels data
-const channels = [
-    { name: 'Red Bull TV', category: 'Sports', url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f5/Red_Bull_TV_logo.svg/1200px-Red_Bull_TV_logo.svg.png' },
-    { name: 'NASA TV', category: 'Science', url: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8', logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg' }
-];
-
-function loadChannel(channel) {
-    document.getElementById('currentChannelName').textContent = channel.name;
-    document.getElementById('currentCategory').textContent = channel.category;
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('video-player');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const muteBtn = document.getElementById('mute-btn');
+    const volumeSlider = document.getElementById('volume-slider');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const pipBtn = document.getElementById('pip-btn');
+    const channelList = document.getElementById('channel-list');
+    const searchInput = document.getElementById('channel-search');
     
-    if (Hls.isSupported()) {
-        if (hls) hls.destroy();
-        hls = new Hls();
-        hls.loadSource(channel.url);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = channel.url;
-        video.addEventListener('loadedmetadata', () => video.play());
+    let hls = null;
+    let currentChannelIndex = 0;
+
+    // Mock channel data
+    const channels = [
+        { name: "News 24 Live", url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", tags: ["HD", "News"] },
+        { name: "Sports Extra", url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", tags: ["4K", "Sports"] },
+        { name: "Movie Classics", url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", tags: ["FHD", "Movies"] },
+        { name: "Nature Doc", url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", tags: ["HD", "Doc"] },
+    ];
+
+    function renderChannels(filter = '') {
+        channelList.innerHTML = '';
+        channels.forEach((ch, index) => {
+            if (ch.name.toLowerCase().includes(filter.toLowerCase())) {
+                const li = document.createElement('li');
+                li.className = `channel-item ${index === currentChannelIndex ? 'active' : ''}`;
+                li.innerHTML = `
+                    <div class="channel-info">
+                        <span class="channel-name">${ch.name}</span>
+                        <div class="channel-tags">
+                            ${ch.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                        </div>
+                    </div>
+                    <span>⭐</span>
+                `;
+                li.addEventListener('click', () => loadChannel(index));
+                channelList.appendChild(li);
+            }
+        });
     }
-}
 
-function renderChannels(list) {
-    channelList.innerHTML = list.map(ch => `
-        <div class="channel-item" onclick="loadChannel({name: '${ch.name}', category: '${ch.category}', url: '${ch.url}'})">
-            <img src="${ch.logo}" class="channel-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzMzMyIvPjwvc3ZnPg=='">
-            <div>
-                <div style="font-weight: 500">${ch.name}</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted)">${ch.category}</div>
-            </div>
-        </div>
-    `).join('');
-}
+    function loadChannel(index) {
+        currentChannelIndex = index;
+        const channel = channels[index];
+        renderChannels(searchInput.value);
+        
+        if (Hls.isSupported()) {
+            if (hls) hls.destroy();
+            hls = new Hls();
+            hls.loadSource(channel.url);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                video.play();
+                playPauseBtn.innerText = '⏸';
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = channel.url;
+            video.addEventListener('loadedmetadata', () => {
+                video.play();
+                playPauseBtn.innerText = '⏸';
+            });
+        }
+        
+        // Mock EPG Update
+        document.getElementById('epg-title').innerText = `Current Show on ${channel.name}`;
+        document.getElementById('epg-time').innerText = `12:00 PM - 2:00 PM`;
+        document.getElementById('epg-progress').style.width = `${Math.random() * 100}%`;
+    }
 
-search.addEventListener('input', (e) => {
-    const q = e.target.value.toLowerCase();
-    renderChannels(channels.filter(c => c.name.toLowerCase().includes(q)));
+    searchInput.addEventListener('input', (e) => renderChannels(e.target.value));
+
+    // Controls
+    playPauseBtn.addEventListener('click', () => {
+        if (video.paused) {
+            video.play();
+            playPauseBtn.innerText = '⏸';
+        } else {
+            video.pause();
+            playPauseBtn.innerText = '▶';
+        }
+    });
+
+    muteBtn.addEventListener('click', () => {
+        video.muted = !video.muted;
+        muteBtn.innerText = video.muted ? '🔇' : '🔊';
+        if (video.muted) volumeSlider.value = 0;
+        else volumeSlider.value = 1;
+    });
+
+    volumeSlider.addEventListener('input', (e) => {
+        video.volume = e.target.value;
+        if (video.volume > 0) {
+            video.muted = false;
+            muteBtn.innerText = '🔊';
+        } else {
+            video.muted = true;
+            muteBtn.innerText = '🔇';
+        }
+    });
+
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.getElementById('video-container').requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    });
+
+    pipBtn.addEventListener('click', async () => {
+        if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+        } else {
+            if (document.pictureInPictureEnabled) {
+                await video.requestPictureInPicture();
+            }
+        }
+    });
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Only if not typing in search
+        if (document.activeElement === searchInput) return;
+        
+        switch(e.key.toLowerCase()) {
+            case ' ':
+                e.preventDefault();
+                playPauseBtn.click();
+                break;
+            case 'f':
+                fullscreenBtn.click();
+                break;
+            case 'm':
+                muteBtn.click();
+                break;
+            case 'arrowup':
+                e.preventDefault();
+                if (currentChannelIndex > 0) loadChannel(currentChannelIndex - 1);
+                break;
+            case 'arrowdown':
+                e.preventDefault();
+                if (currentChannelIndex < channels.length - 1) loadChannel(currentChannelIndex + 1);
+                break;
+        }
+    });
+
+    // Init
+    renderChannels();
+    if (channels.length > 0) loadChannel(0);
 });
-
-// Controls
-document.getElementById('btnPip').onclick = () => {
-    if (document.pictureInPictureElement) {
-        document.exitPictureInPicture();
-    } else {
-        video.requestPictureInPicture();
-    }
-};
-
-document.getElementById('btnFull').onclick = () => {
-    if (!document.fullscreenElement) {
-        video.requestFullscreen();
-    } else {
-        document.exitFullscreen();
-    }
-};
-
-document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') {
-        e.preventDefault();
-        video.paused ? video.play() : video.pause();
-    } else if (e.code === 'KeyF') {
-        document.getElementById('btnFull').click();
-    }
-});
-
-// Init
-renderChannels(channels);
-if(channels.length > 0) loadChannel(channels[0]);

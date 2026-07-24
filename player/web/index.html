@@ -6,38 +6,50 @@
     <title>Web Player | ALL-IN-ONE IPTV</title>
     <link rel="stylesheet" href="player.css">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="player-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>Channels</h2>
-                <input type="text" id="search" placeholder="Search channels..." class="search-input">
-            </div>
-            <div class="channel-list" id="channelList">
+    <div class="sidebar">
+        <div class="brand">ALL-IN-ONE</div>
+        <div class="search-box">
+            <input type="text" id="channel-search" placeholder="Search channels...">
+        </div>
+        <div class="nav-links">
+            <ul class="channel-list" id="channel-list">
                 <!-- Populated by JS -->
-            </div>
-        </aside>
+            </ul>
+        </div>
+    </div>
 
-        <!-- Main Player Area -->
-        <main class="main-content">
-            <div class="video-wrapper">
-                <video id="video" class="video-player" controls autoplay></video>
-                <div class="channel-info-overlay" id="channelInfo">
-                    <h1 id="currentChannelName">Select a channel</h1>
-                    <p id="currentCategory">Category</p>
+    <div class="main-content">
+        <div class="video-container" id="video-container">
+            <video id="video-player"></video>
+            
+            <div class="custom-controls">
+                <button class="control-btn" id="play-pause-btn">⏸</button>
+                <button class="control-btn" id="mute-btn">🔊</button>
+                <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.1" value="1">
+                
+                <div style="flex: 1"></div>
+                
+                <select class="quality-selector" id="quality-selector">
+                    <option value="auto">Auto</option>
+                </select>
+                <button class="control-btn" id="pip-btn">◲</button>
+                <button class="control-btn" id="fullscreen-btn">⛶</button>
+            </div>
+        </div>
+        
+        <div class="epg-bar">
+            <div class="epg-current">
+                <div class="epg-title" id="epg-title">Loading Program Data...</div>
+                <div class="epg-time" id="epg-time">--:-- - --:--</div>
+                <div class="epg-progress-bg">
+                    <div class="epg-progress-fill" id="epg-progress"></div>
                 </div>
             </div>
-            
-            <div class="controls-bar">
-                <button id="btnFav" class="btn">❤️ Add to Favorites</button>
-                <button id="btnPip" class="btn">📺 Picture in Picture</button>
-                <button id="btnFull" class="btn">⛶ Fullscreen</button>
-            </div>
-        </main>
+        </div>
     </div>
+    
     <script src="player.js"></script>
 </body>
 </html>
