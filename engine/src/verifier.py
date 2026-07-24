@@ -1,13 +1,14 @@
 """
-Verifier — High-Performance Concurrent Stream Health Checker.
+Verifier — High-Performance Concurrent Stream Health & Latency Checker.
 
 Features:
 1. Ultra-fast asyncio worker pool (500 workers).
 2. Domain Circuit Breaker (Blacklists failed hosts after 3 consecutive timeouts).
-3. Reduced 3-second HEAD timeout.
+3. Latency measurement (ms) for host speed ranking.
 """
 
 import asyncio
+import time
 from typing import List, Dict
 from urllib.parse import urlparse
 
@@ -34,13 +35,15 @@ async def check_stream(
     stream: Stream,
     timeout: int = 3,
 ) -> bool:
-    """Check if a single stream URL is alive via HTTP HEAD request with Circuit Breaker."""
+    """Check if a single stream URL is alive via HTTP HEAD request with Circuit Breaker and latency profiling."""
     host = extract_host(stream.url)
 
     # Circuit Breaker: Skip host if it failed repeatedly
     if host and DOMAIN_FAILURES.get(host, 0) >= MAX_DOMAIN_FAILURES:
+        stream.latency_ms = 9999.0
         return False
 
+    start_time = time.perf_counter()
     try:
         async with session.head(
             stream.url,
@@ -49,13 +52,19 @@ async def check_stream(
             allow_redirects=True,
             headers={"User-Agent": "Mozilla/5.0 (VLC/3.0.18)"}
         ) as resp:
+            elapsed_ms = (time.perf_counter() - start_time) * 1000.0
             is_ok = resp.status < 400
-            if not is_ok and host:
-                DOMAIN_FAILURES[host] = DOMAIN_FAILURES.get(host, 0) + 1
-            elif is_ok and host:
-                DOMAIN_FAILURES[host] = 0 # Reset on success
+            if is_ok:
+                stream.latency_ms = elapsed_ms
+                if host:
+                    DOMAIN_FAILURES[host] = 0 # Reset on success
+            else:
+                stream.latency_ms = 9999.0
+                if host:
+                    DOMAIN_FAILURES[host] = DOMAIN_FAILURES.get(host, 0) + 1
             return is_ok
     except (aiohttp.ClientError, asyncio.TimeoutError, Exception):
+        stream.latency_ms = 9999.0
         if host:
             DOMAIN_FAILURES[host] = DOMAIN_FAILURES.get(host, 0) + 1
         return False
@@ -67,7 +76,7 @@ async def verify_streams(
     timeout: int = 3,
 ) -> List[Stream]:
     """
-    Verify a list of streams concurrently with Domain Circuit Breaker.
+    Verify a list of streams concurrently with Domain Circuit Breaker and Latency Ranking.
 
     Args:
         streams: List of Stream objects to verify.
@@ -100,7 +109,7 @@ async def verify_streams(
 
         with Progress(
             SpinnerColumn(),
-            TextColumn("[cyan]Verifying streams (500 Workers + Circuit Breaker)..."),
+            TextColumn("[cyan]Verifying & Latency Profiling..."),
             BarColumn(),
             TextColumn("{task.completed}/{task.total}"),
             TimeRemainingColumn(),

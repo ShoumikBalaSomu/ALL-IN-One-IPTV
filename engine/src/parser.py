@@ -1,9 +1,9 @@
 """
-Smart M3U parsing with full EXTINF metadata extraction.
+Smart M3U parsing with full EXTINF metadata extraction and fallback stream mirrors.
 """
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 from .utils import detect_country_from_group
 
@@ -19,7 +19,9 @@ class Stream:
     tvg_language: str = ""
     tvg_country: str = ""
     has_cookies: bool = False
-    vlc_opts: list[str] | None = None
+    vlc_opts: list[str] = field(default_factory=list)
+    latency_ms: float = 999.0
+    fallback_urls: list[str] = field(default_factory=list)
 
 
 class M3UParser:
@@ -40,6 +42,8 @@ class M3UParser:
                 "tvg_logo": s.tvg_logo,
                 "group": group_detected,
                 "has_cookies": s.has_cookies,
+                "latency_ms": s.latency_ms,
+                "fallback_urls": s.fallback_urls
             })
         return result
 

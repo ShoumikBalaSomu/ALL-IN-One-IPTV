@@ -1,5 +1,5 @@
 """
-Combiner — Export combined playlists grouped by country.
+Combiner — Export latency-ranked combined playlists grouped by country with fallback stream mirrors.
 """
 
 import os
@@ -7,15 +7,12 @@ from typing import List, Dict
 
 from .parser import Stream
 from .grouper import group_by_country
-from .folder import to_m3u
 from .utils import logger
 
 
 def export_combined(streams: List[Stream], output_path: str) -> str:
     """
-    Export all streams to a single M3U file, grouped by country.
-
-    Each country group is separated by a comment header for readability.
+    Export all streams to a single M3U file, grouped by country with latency-ranked fallback mirrors.
 
     Args:
         streams: List of Stream objects to export.
@@ -27,9 +24,9 @@ def export_combined(streams: List[Stream], output_path: str) -> str:
     grouped = group_by_country(streams)
 
     lines = ["#EXTM3U"]
-    lines.append(f"# ALL-IN-ONE IPTV — Auto-generated playlist")
-    lines.append(f"# Total channels: {len(streams)}")
-    lines.append(f"# Countries: {len(grouped)}")
+    lines.append(f"# ALL-IN-ONE IPTV — Smart Latency-Ranked Playlist")
+    lines.append(f"# Total folded channels: {len(streams)}")
+    lines.append(f"# Countries/Categories: {len(grouped)}")
     lines.append("")
 
     for country in sorted(grouped.keys()):
@@ -59,6 +56,15 @@ def export_combined(streams: List[Stream], output_path: str) -> str:
 
             extinf_parts.append(f',{stream.name}')
             lines.append(''.join(extinf_parts))
+
+            # Include VLC options and fallback mirrors
+            if stream.vlc_opts:
+                lines.extend(stream.vlc_opts)
+
+            if stream.fallback_urls:
+                for fb in stream.fallback_urls:
+                    lines.append(f"#EXTVLCOPT:fallback={fb}")
+
             lines.append(stream.url)
 
         lines.append("")
@@ -67,5 +73,5 @@ def export_combined(streams: List[Stream], output_path: str) -> str:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
 
-    logger.info(f"Exported {len(streams)} streams to {output_path}")
+    logger.info(f"Exported {len(streams)} folded channels to {output_path}")
     return output_path
